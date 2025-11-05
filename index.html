@@ -14,11 +14,11 @@
 
       <!-- TÍTULO DENTRO DEL MARCO FLORAL -->
       <div class="title-container">
-        <img src="imagenes/FLORES ARRIBA.png" alt="Marco floral" class="floral-frame" />
+        <img src="imagenes/flores-arriba.png" alt="Marco floral" class="floral-frame" />
         <h1 class="title-inside">BIENVENIDOS A NUESTRA BODA</h1>
       </div>
 
-      <h3 class="names">Jonatan y Michel</h3>
+      <h2 class="names">Jonatan y Michel</h2>
 
       <div class="photo-wrapper" id="openGalleryBtn">
         <img src="imagenes/jhonathan y michel.png" alt="Jonatan y Michel" class="couple-photo" />
@@ -33,7 +33,7 @@
         Con todo nuestro cariño
       </p>
 
-      <h3 class="names bottom">Jonatan y Michel</h3>
+      <h2 class="names bottom">Jonatan y Michel</h2>
 
       <button class="upload-btn" id="uploadBtn">Subir recuerdo</button>
     </main>
@@ -43,7 +43,7 @@
   <div id="passwordModal" class="modal">
     <div class="modal-content small">
       <h3>Acceso a la Galería</h3>
-      <p>Ingresa la contraseña para ver la galería, subir recuerdos o generar el QR.</p>
+      <p>Ingresa la contraseña para ver la galería y generar el QR.</p>
       <input type="password" id="adminPassword" placeholder="Contraseña" />
       <button id="enterAdmin">Entrar</button>
     </div>
@@ -61,7 +61,7 @@
         <button type="submit">Subir Recuerdo</button>
       </form>
 
-      <div class="qr-section">
+      <div class="qr-section" id="qrSection" style="display:none;">
         <button id="generateQr">Generar QR para Invitados</button>
         <div id="qrContainer" style="display:none; text-align:center; margin:20px 0;">
           <canvas id="qrcode"></canvas><br>
@@ -69,7 +69,7 @@
         </div>
       </div>
 
-      <div id="galleryGrid" class="gallery-grid"></div>
+      <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
 
       <div id="adminPanel" style="display:none; margin-top:30px; padding:15px; background:#fff8f0; border-radius:10px;">
         <h3>Panel Admin</h3>
