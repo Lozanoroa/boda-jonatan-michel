@@ -7,6 +7,8 @@
   <!-- FUENTES -->
   <link href="https://fonts.googleapis.com/css2?family=Themysion:wght@400;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <!-- QR LIBRERÍA -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
   <div class="page-container">
@@ -55,26 +57,24 @@
       <span class="close">X</span>
       <h2>Galería de Recuerdos</h2>
 
+      <!-- Formulario de subida (PÚBLICO) -->
       <form id="uploadForm" class="upload-form">
         <input type="file" id="mediaFile" accept="image/*,video/*" multiple required />
         <textarea id="messageInput" placeholder="Mensaje opcional (máx. 100 palabras)" maxlength="600"></textarea>
         <button type="submit">Subir Recuerdo</button>
       </form>
 
+      <!-- QR ÚNICO -->
       <div class="qr-section" id="qrSection" style="display:none;">
         <button id="generateQr">Generar QR para Invitados</button>
         <div id="qrContainer" style="display:none; text-align:center; margin:20px 0;">
-          <canvas id="qrcode"></canvas><br>
+          <div id="qrcode"></div><br>
           <button id="downloadQr">Descargar QR</button>
         </div>
       </div>
 
+      <!-- Galería (solo con contraseña) -->
       <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
-
-      <div id="adminPanel" style="display:none; margin-top:30px; padding:15px; background:#fff8f0; border-radius:10px;">
-        <h3>Panel Admin</h3>
-        <button id="downloadAllBtn">Descargar Todo</button>
-      </div>
     </div>
   </div>
 
