@@ -10,8 +10,8 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -31,22 +31,19 @@ const qrContainer = document.getElementById('qrContainer');
 const downloadQr = document.getElementById('downloadQr');
 const adminPassword = document.getElementById('adminPassword');
 const enterAdmin = document.getElementById('enterAdmin');
-const adminPanel = document.getElementById('adminPanel');
-const downloadAllBtn = document.getElementById('downloadAllBtn');
 
 let isAuthenticated = false;
+let qrGenerated = false;
 
-// === SUBIDA PÚBLICA: Abrir modal con formulario (sin contraseña) ===
+// === SUBIDA PÚBLICA ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
-  // Solo mostrar formulario de subida (público)
   uploadForm.style.display = 'block';
   galleryGrid.style.display = 'none';
   qrSection.style.display = 'none';
-  adminPanel.style.display = 'none';
 });
 
-// === VER GALERÍA/QR: Requerir contraseña ===
+// === VER GALERÍA/QR: CON CONTRASEÑA ===
 function requireAuth() {
   if (!isAuthenticated) {
     passwordModal.style.display = 'block';
@@ -61,12 +58,11 @@ openGalleryBtn.addEventListener('click', () => {
     uploadForm.style.display = 'block';
     galleryGrid.style.display = 'block';
     qrSection.style.display = 'block';
-    adminPanel.style.display = 'block';
     loadGallery();
   }
 });
 
-// === Verificar contraseña ===
+// === CONTRASEÑA ===
 enterAdmin.addEventListener('click', () => {
   const pwd = adminPassword.value.trim();
   if (pwd === 'Jonatanymichel') {
@@ -76,7 +72,6 @@ enterAdmin.addEventListener('click', () => {
     uploadForm.style.display = 'block';
     galleryGrid.style.display = 'block';
     qrSection.style.display = 'block';
-    adminPanel.style.display = 'block';
     loadGallery();
     adminPassword.value = '';
   } else {
@@ -86,7 +81,7 @@ enterAdmin.addEventListener('click', () => {
   }
 });
 
-// === Cerrar modales ===
+// === CERRAR MODALES ===
 closeBtns.forEach(btn => btn.addEventListener('click', () => {
   galleryModal.style.display = 'none';
   passwordModal.style.display = 'none';
@@ -101,31 +96,45 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === Generar QR (solo con contraseña) ===
-generateQr.addEventListener('click', async () => {
+// === GENERAR QR ÚNICO ===
+generateQr.addEventListener('click', () => {
+  if (qrGenerated) return;
+
   qrContainer.style.display = 'block';
-  const canvas = document.getElementById('qrcode');
+  const qrDiv = document.getElementById('qrcode');
+  qrDiv.innerHTML = '';
   const url = 'https://lozanoroa.github.io/boda-jonatan-michel/';
-  try {
-    const { default: QRCode } = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
-    QRCode.toCanvas(canvas, url, { width: 240, margin: 2, color: { dark: '#9f5b4c' } });
-  } catch (err) {
-    canvas.innerHTML = '<p style="color:red;">Error QR</p>';
-  }
+
+  new QRCode(qrDiv, {
+    text: url,
+    width: 240,
+    height: 240,
+    colorDark: '#9f5b4c',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // Ocultar botón generar
+  generateQr.style.display = 'none';
+  qrGenerated = true;
 });
 
+// === DESCARGAR QR ===
 downloadQr.addEventListener('click', () => {
-  const canvas = document.getElementById('qrcode');
+  const canvas = document.querySelector('#qrcode canvas');
+  if (!canvas) {
+    alert('Primero genera el QR');
+    return;
+  }
   const link = document.createElement('a');
   link.download = 'QR-Boda-Jonatan-Michel.png';
-  link.href = canvas.toDataURL();
+  link.href = canvas.toDataURL('image/png');
   link.click();
 });
 
 // === SUBIR ARCHIVO (PÚBLICO) ===
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-
   const files = document.getElementById('mediaFile').files;
   const message = document.getElementById('messageInput').value.trim();
 
@@ -138,14 +147,15 @@ uploadForm.addEventListener('submit', async (e) => {
     const fileRef = ref(storage, `recuerdos/${Date.now()}_${file.name}`);
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
-    await addDoc(collection(db, 'recuerdos'), { url, message, type: file.type.startsWith('image') ? 'image' : 'video', timestamp: new Date() });
+    await addDoc(collection(db, 'recuerdos'), {
+      url, message, type: file.type.startsWith('image') ? 'image' : 'video', timestamp: new Date()
+    });
   });
 
   try {
     await Promise.all(promises);
     alert('¡Subido con éxito!');
     uploadForm.reset();
-    // Si está autenticado, recarga galería
     if (isAuthenticated) loadGallery();
   } catch (err) {
     alert('Error al subir');
@@ -153,7 +163,7 @@ uploadForm.addEventListener('submit', async (e) => {
   }
 });
 
-// === CARGAR GALERÍA (solo con contraseña) ===
+// === CARGAR GALERÍA ===
 async function loadGallery() {
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
   try {
@@ -172,19 +182,6 @@ async function loadGallery() {
       } else {
         item.innerHTML = `<video controls preload="metadata"><source src="${data.url}#t=0.1" type="${data.type}">No soporta video</video><p>${data.message || ''}</p>`;
       }
-      if (isAuthenticated) {
-        const del = document.createElement('button');
-        del.textContent = 'Eliminar';
-        del.onclick = async () => {
-          if (confirm('¿Eliminar?')) {
-            await deleteDoc(doc(db, 'recuerdos', docSnap.id));
-            const fileRef = ref(storage, data.url);
-            await deleteObject(fileRef).catch(() => {});
-            loadGallery();
-          }
-        };
-        item.appendChild(del);
-      }
       galleryGrid.appendChild(item);
     });
   } catch (err) {
@@ -192,10 +189,3 @@ async function loadGallery() {
     console.error(err);
   }
 }
-
-// === DESCARGAR TODO (solo admin) ===
-downloadAllBtn.addEventListener('click', async () => {
-  if (!confirm('¿Abrir todos los archivos?')) return;
-  const snapshot = await getDocs(collection(db, 'recuerdos'));
-  snapshot.forEach(doc => window.open(doc.data().url, '_blank'));
-});
