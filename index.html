@@ -3,78 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bienvenidos a Nuestra Boda</title>
-  <!-- FUENTES -->
-  <link href="https://fonts.googleapis.com/css2?family=Themysion:wght@400;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
-  <!-- QR LIBRERÍA -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <title>Boda Jonatan & Michel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Themysion&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
   <div class="page-container">
-    <main class="content">
-
-      <!-- TÍTULO DENTRO DEL MARCO FLORAL -->
+    <div class="content">
+      <!-- Título y marco floral -->
       <div class="title-container">
-        <img src="imagenes/FLORES ARRIBA.png" alt="Marco floral" class="floral-frame" />
-        <h1 class="title-inside">BIENVENIDOS A NUESTRA BODA</h1>
+        <img src="marco-floral.png" alt="Marco floral" class="floral-frame">
+        <h1 class="title-inside">¡Gracias por ser parte de nuestro día especial!</h1>
       </div>
 
-      <h2 class="names">Jonatan y Michel</h2>
+      <h2 class="names">Jonatan & Michel</h2>
+      <p class="message">Queremos que este momento quede grabado para siempre. Sube tus fotos y videos, y si deseas ver todos los recuerdos, ingresa la contraseña.</p>
 
-      <div class="photo-wrapper" id="openGalleryBtn">
-        <img src="imagenes/jhonathan y michel.png" alt="Jonatan y Michel" class="couple-photo" />
+      <div class="photo-wrapper">
+        <img src="pareja.jpg" alt="Jonatan y Michel" class="couple-photo">
       </div>
 
-      <p class="message">
-        Queridos familiares y amigos,<br>
-        Nuestra boda es un día lleno de amor, risas y momentos que atesoraremos por siempre, ¡ustedes fueron parte esencial de esa magia!<br>
-        Queremos revivir cada instante a través de sus ojos, así que los invitamos con todo el corazón a compartir las fotos y videos que capturaron.<br>
-        Cada imagen y cada clip que compartan será un pedacito de felicidad que guardaremos para siempre.<br>
-        ¡Gracias por ser parte de nuestro gran día y por ayudarnos a crear un álbum lleno de amor!<br>
-        Con todo nuestro cariño
-      </p>
-
-      <h2 class="names bottom">Jonatan y Michel</h2>
-
-      <button class="upload-btn" id="uploadBtn">Subir recuerdo</button>
-    </main>
-  </div>
-
-  <!-- Modal Contraseña -->
-  <div id="passwordModal" class="modal">
-    <div class="modal-content small">
-      <h3>Acceso a la Galería</h3>
-      <p>Ingresa la contraseña para ver la galería y generar el QR.</p>
-      <input type="password" id="adminPassword" placeholder="Contraseña" />
-      <button id="enterAdmin">Entrar</button>
+      <!-- Botones principales -->
+      <button id="uploadBtn" class="upload-btn">Subir Recuerdo</button>
+      <button id="openGalleryBtn" class="upload-btn" style="margin-top: 20px;">Ver Galería</button>
     </div>
   </div>
 
-  <!-- Modal SUBIDA PÚBLICA -->
-  <div id="galleryModal" class="modal">
-    <div class="modal-content">
-      <span class="close">X</span>
-      <h2>Sube tus recuerdos de nuestra boda</h2>
+  <!-- Modal de Contraseña -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content small">
+      <span class="close">×</span>
+      <h3>Ingresar a la Galería</h3>
+      <input type="password" id="adminPassword" placeholder="Contraseña" style="margin: 20px 0; padding: 14px; border-radius: 12px; border: 2px solid #ddd; width: 100%; font-family: 'Old Standard TT', serif;" />
+      <button id="enterAdmin" style="background: #9f5b4c; color: white; border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; font-family: 'Old Standard TT', serif; cursor: pointer;">Entrar</button>
+    </div>
+  </div>
 
-      <!-- Formulario de subida (PÚBLICO) -->
+  <!-- Modal de Galería (nuevo diseño) -->
+  <div id="galleryModal" class="modal">
+    <div class="gallery-modal-content">
+      <!-- Botón VOLVER -->
+      <button class="back-btn">VOLVER</button>
+
+      <!-- Título -->
+      <h2 class="gallery-title">GALERÍA DE<br>RECUERDOS</h2>
+
+      <!-- Formulario de subida (visible siempre) -->
       <form id="uploadForm" class="upload-form">
         <input type="file" id="mediaFile" accept="image/*,video/*" multiple required />
-        <textarea id="messageInput" placeholder="Mensaje opcional (máx. 100 palabras)" maxlength="600"></textarea>
+        <textarea id="messageInput" placeholder="Escribe un mensaje (opcional)" rows="3"></textarea>
         <button type="submit">Subir Recuerdo</button>
       </form>
 
-      <!-- QR ÚNICO (solo con contraseña) -->
-      <div class="qr-section" id="qrSection" style="display:none;">
-        <button id="generateQr">Generar QR para Invitados</button>
-        <div id="qrContainer" style="display:none; text-align:center; margin:20px 0;">
-          <div id="qrcode"></div><br>
+      <!-- Grid de recuerdos -->
+      <div id="galleryGrid" class="gallery-grid"></div>
+
+      <!-- Sección QR -->
+      <div id="qrSection">
+        <div id="qrContainer" style="display: none; text-align: center; margin: 30px 0;">
+          <div id="qrcode"></div>
           <button id="downloadQr">Descargar QR</button>
         </div>
+        <button id="generateQr" class="generate-qr-btn">GENERAR QR</button>
       </div>
-
-      <!-- Galería (solo con contraseña) -->
-      <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
     </div>
   </div>
 
