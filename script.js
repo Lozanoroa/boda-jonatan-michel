@@ -35,7 +35,7 @@ const enterAdmin = document.getElementById('enterAdmin');
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === SUBIDA PÚBLICA ===
+// === SUBIDA PÚBLICA: ABRIR FORMULARIO DIRECTO ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
   uploadForm.style.display = 'block';
@@ -106,7 +106,7 @@ generateQr.addEventListener('click', () => {
   const url = 'https://lozanoroa.github.io/boda-jonatan-michel/';
 
   new QRCode(qrDiv, {
-    text: url,
+     text: url,
     width: 240,
     height: 240,
     colorDark: '#9f5b4c',
@@ -114,7 +114,6 @@ generateQr.addEventListener('click', () => {
     correctLevel: QRCode.CorrectLevel.H
   });
 
-  // Ocultar botón generar
   generateQr.style.display = 'none';
   qrGenerated = true;
 });
@@ -163,7 +162,7 @@ uploadForm.addEventListener('submit', async (e) => {
   }
 });
 
-// === CARGAR GALERÍA ===
+// === CARGAR GALERÍA (solo con contraseña) ===
 async function loadGallery() {
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
   try {
