@@ -25,6 +25,7 @@ const passwordModal = document.getElementById('passwordModal');
 const closeBtns = document.querySelectorAll('.close');
 const uploadForm = document.getElementById('uploadForm');
 const galleryGrid = document.getElementById('galleryGrid');
+const qrSection = document.getElementById('qrSection');
 const generateQr = document.getElementById('generateQr');
 const qrContainer = document.getElementById('qrContainer');
 const downloadQr = document.getElementById('downloadQr');
@@ -35,7 +36,17 @@ const downloadAllBtn = document.getElementById('downloadAllBtn');
 
 let isAuthenticated = false;
 
-// === Requerir autenticación ===
+// === SUBIDA PÚBLICA: Abrir modal con formulario (sin contraseña) ===
+uploadBtn.addEventListener('click', () => {
+  galleryModal.style.display = 'block';
+  // Solo mostrar formulario de subida (público)
+  uploadForm.style.display = 'block';
+  galleryGrid.style.display = 'none';
+  qrSection.style.display = 'none';
+  adminPanel.style.display = 'none';
+});
+
+// === VER GALERÍA/QR: Requerir contraseña ===
 function requireAuth() {
   if (!isAuthenticated) {
     passwordModal.style.display = 'block';
@@ -44,14 +55,15 @@ function requireAuth() {
   return true;
 }
 
-// === Abrir galería ===
-[openGalleryBtn, uploadBtn].forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (requireAuth()) {
-      galleryModal.style.display = 'block';
-      loadGallery();
-    }
-  });
+openGalleryBtn.addEventListener('click', () => {
+  if (requireAuth()) {
+    galleryModal.style.display = 'block';
+    uploadForm.style.display = 'block';
+    galleryGrid.style.display = 'block';
+    qrSection.style.display = 'block';
+    adminPanel.style.display = 'block';
+    loadGallery();
+  }
 });
 
 // === Verificar contraseña ===
@@ -61,6 +73,9 @@ enterAdmin.addEventListener('click', () => {
     isAuthenticated = true;
     passwordModal.style.display = 'none';
     galleryModal.style.display = 'block';
+    uploadForm.style.display = 'block';
+    galleryGrid.style.display = 'block';
+    qrSection.style.display = 'block';
     adminPanel.style.display = 'block';
     loadGallery();
     adminPassword.value = '';
@@ -86,14 +101,14 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === Generar QR ===
+// === Generar QR (solo con contraseña) ===
 generateQr.addEventListener('click', async () => {
   qrContainer.style.display = 'block';
   const canvas = document.getElementById('qrcode');
-  const url = window.location.href;
+  const url = 'https://lozanoroa.github.io/boda-jonatan-michel/';
   try {
     const { default: QRCode } = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
-    QRCode.toCanvas(canvas, url, { width: 240, margin: 2, color: { dark: '#d35400' } });
+    QRCode.toCanvas(canvas, url, { width: 240, margin: 2, color: { dark: '#9f5b4c' } });
   } catch (err) {
     canvas.innerHTML = '<p style="color:red;">Error QR</p>';
   }
@@ -107,10 +122,9 @@ downloadQr.addEventListener('click', () => {
   link.click();
 });
 
-// === Subir archivo ===
+// === SUBIR ARCHIVO (PÚBLICO) ===
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!isAuthenticated) return;
 
   const files = document.getElementById('mediaFile').files;
   const message = document.getElementById('messageInput').value.trim();
@@ -131,14 +145,15 @@ uploadForm.addEventListener('submit', async (e) => {
     await Promise.all(promises);
     alert('¡Subido con éxito!');
     uploadForm.reset();
-    loadGallery();
+    // Si está autenticado, recarga galería
+    if (isAuthenticated) loadGallery();
   } catch (err) {
     alert('Error al subir');
     console.error(err);
   }
 });
 
-// === Cargar galería ===
+// === CARGAR GALERÍA (solo con contraseña) ===
 async function loadGallery() {
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
   try {
@@ -178,7 +193,7 @@ async function loadGallery() {
   }
 }
 
-// === Descargar todo ===
+// === DESCARGAR TODO (solo admin) ===
 downloadAllBtn.addEventListener('click', async () => {
   if (!confirm('¿Abrir todos los archivos?')) return;
   const snapshot = await getDocs(collection(db, 'recuerdos'));
