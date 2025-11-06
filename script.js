@@ -21,8 +21,15 @@ const adminPassword = document.getElementById('adminPassword');
 const enterAdmin = document.getElementById('enterAdmin');
 const modalTitle = document.getElementById('modalTitle');
 
+// === NUEVO: MODAL DE VISTA PREVIA ===
+const previewModal = document.getElementById('previewModal');
+const previewMedia = document.getElementById('previewMedia');
+const downloadMedia = document.getElementById('downloadMedia');
+const closePreview = document.querySelector('.close-preview');
+
 let isAuthenticated = false;
 let qrGenerated = false;
+let currentMediaUrl = '';
 
 // === ABRIR GALERÍA DIRECTO ===
 uploadBtn.addEventListener('click', () => {
@@ -98,6 +105,23 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
+// === CERRAR VISTA PREVIA ===
+closePreview.addEventListener('click', () => {
+  previewModal.style.display = 'none';
+});
+window.addEventListener('click', (e) => {
+  if (e.target === previewModal) previewModal.style.display = 'none';
+});
+
+// === DESCARGAR MEDIA ===
+downloadMedia.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.href = currentMediaUrl;
+  link.download = '';
+  link.click();
+});
+
+// === SUBIR ARCHIVOS ===
 submitUpload.addEventListener('click', async () => {
   const files = mediaFile.files;
   const message = messageInput.value.trim();
@@ -165,6 +189,7 @@ submitUpload.addEventListener('click', async () => {
   submitUpload.textContent = 'Subir Recuerdo';
 });
 
+// === CARGAR GALERÍA CON VISTA PREVIA Y DESCARGA ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
   galleryGrid.innerHTML = '<p style="text-align:center;">Cargando...</p>';
@@ -181,16 +206,17 @@ function loadGallery() {
       item.className = 'gallery-item';
       item.style.position = 'relative';
       item.style.marginBottom = '20px';
+      item.style.cursor = 'pointer';
 
       if (r.type === 'image') {
         item.innerHTML = `
-          <img src="${r.url}" loading="lazy" style="width:100%;border-radius:12px;">
+          <img src="${r.url}" loading="lazy" style="width:100%;border-radius:12px;" class="preview-img">
           <p style="margin:8px 0;font-size:14px;">${r.message || ''}</p>
           <button class="delete-btn" data-index="${index}">X</button>
         `;
       } else {
         item.innerHTML = `
-          <video controls preload="metadata" style="width:100%;height:180px;object-fit:cover;border-radius:12px;">
+          <video controls preload="metadata" style="width:100%;height:180px;object-fit:cover;border-radius:12px;" class="preview-video">
             <source src="${r.url}#t=0.1" type="video/mp4">
           </video>
           <p style="margin:8px 0;font-size:14px;">${r.message || ''}</p>
@@ -198,10 +224,28 @@ function loadGallery() {
         `;
       }
       galleryGrid.appendChild(item);
+
+      // === ABRIR VISTA PREVIA AL HACER CLIC ===
+      const mediaElement = item.querySelector(r.type === 'image' ? '.preview-img' : '.preview-video');
+      mediaElement.addEventListener('click', () => {
+        currentMediaUrl = r.url;
+        previewModal.style.display = 'block';
+        if (r.type === 'image') {
+          previewMedia.innerHTML = `<img src="${r.url}" style="max-width:100%;max-height:70vh;border-radius:12px;">`;
+        } else {
+          previewMedia.innerHTML = `
+            <video controls style="max-width:100%;max-height:70vh;border-radius:12px;">
+              <source src="${r.url}" type="video/mp4">
+            </video>
+          `;
+        }
+      });
     });
 
+    // === ELIMINAR ===
     document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (!isAuthenticated) {
           alert('No tienes permiso para eliminar.');
           return;
@@ -217,6 +261,7 @@ function loadGallery() {
   }, 300);
 }
 
+// === GENERAR QR NEGRO ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   
@@ -242,6 +287,7 @@ generateQr.addEventListener('click', () => {
   qrGenerated = true;
 });
 
+// === DESCARGAR QR ===
 downloadQr.addEventListener('click', () => {
   const canvas = document.querySelector('#qrcode canvas');
   if (!canvas) {
