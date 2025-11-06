@@ -38,12 +38,12 @@
 
       <h2 class="names bottom">Jonatan y Michel</h2>
 
-      <!-- BOTÓN QUE ABRE GALERÍA DIRECTO -->
+      <!-- BOTÓN SUBIR RECUERDO -->
       <button class="upload-btn" id="uploadBtn">Subir recuerdo</button>
     </main>
   </div>
 
-  <!-- Modal Contraseña -->
+  <!-- MODAL CONTRASEÑA -->
   <div id="passwordModal" class="modal">
     <div class="modal-content small">
       <h3>Acceso a la Galería</h3>
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <!-- Modal PRINCIPAL -->
+  <!-- MODAL PRINCIPAL -->
   <div id="galleryModal" class="modal">
     <div class="modal-content">
       <span class="close">X</span>
@@ -63,14 +63,14 @@
       <input type="file" id="mediaFile" accept="image/*,video/*" multiple style="display:none;" />
       <button id="selectFilesBtn" class="select-btn">Seleccionar fotos o videos</button>
 
-      <!-- CAMPO DE TEXTO -->
+      <!-- MENSAJE -->
       <textarea id="messageInput" placeholder="Escribe un mensaje (opcional)" maxlength="600" class="message-textarea"></textarea>
 
-      <!-- BOTÓN SUBIR -->
+      <!-- SUBIR -->
       <button id="submitUpload" class="submit-btn">Subir Recuerdo</button>
 
       <!-- QR -->
-      <div class="qr-section" id="qrSection" style="display:none; text-align:center; margin:30px 0;">
+      <div class="qr-section" id="qrSection" style="display:none;">
         <button id="generateQr">Generar QR para Invitados</button>
         <div id="qrContainer" style="display:none; margin:20px 0;">
           <div id="qrcode"></div><br>
@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE VISTA PREVIA -->
+  <!-- MODAL VISTA PREVIA -->
   <div id="previewModal" class="modal">
     <div class="preview-content">
       <span class="close-preview">X</span>
