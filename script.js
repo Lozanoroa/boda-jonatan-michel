@@ -1,8 +1,8 @@
 // === CONFIGURACIÓN ===
 const CLOUDINARY_CLOUD_NAME = 'dnhrk78ul';
 const CLOUDINARY_UPLOAD_PRESET = 'boda2025';
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mqagrbyb';
-const SYNC_ENDPOINT = 'https://formspree.io/f/mqagrbyb'; // Recibe datos
+const FORMSPREE_GET = 'https://formspree.io/f/mqagrbyb';  // Recibe datos
+const FORMSPREE_POST = 'https://formspree.io/f/mqagrbyb'; // Envía datos
 
 // === ELEMENTOS ===
 const uploadBtn = document.getElementById('uploadBtn');
@@ -29,31 +29,39 @@ const closePreview = document.querySelector('.close-preview');
 let isAuthenticated = false;
 let qrGenerated = false;
 let currentMediaUrl = '';
+let lastSync = 0;
 
-// === SINCRONIZAR CON FORMSREE (CADA 10 SEGUNDOS) ===
+// === SINCRONIZAR DESDE FORMSREE (CADA 8 SEGUNDOS) ===
 async function syncFromServer() {
   try {
-    const res = await fetch(SYNC_ENDPOINT);
+    const res = await fetch(FORMSPREE_GET + '?_limit=1000');
     const text = await res.text();
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      const serverData = JSON.parse(jsonMatch[0]);
-      const localData = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
-      const merged = [...localData];
-      serverData.forEach(item => {
-        if (!merged.find(m => m.url === item.url)) merged.push(item);
-      });
-      localStorage.setItem('recuerdos_boda', JSON.stringify(merged));
-      if (galleryGrid.style.display === 'block') loadGallery();
-    }
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) return;
+
+    const serverData = JSON.parse(match[0]);
+    const localData = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
+    const merged = [...localData];
+
+    serverData.forEach(item => {
+      if (!merged.find(m => m.url === item.url && m.timestamp === item.timestamp)) {
+        merged.push(item);
+      }
+    });
+
+    localStorage.setItem('recuerdos_boda', JSON.stringify(merged));
+    if (galleryGrid.style.display === 'block') loadGallery();
+    lastSync = Date.now();
   } catch (err) {
-    console.log('Sync falló (normal si no hay datos):', err);
+    console.log('Sync falló (normal si no hay datos aún):', err);
   }
 }
 
-// Carga inicial + cada 10 segundos
+// Carga inicial + cada 8 segundos
 syncFromServer();
-setInterval(syncFromServer, 10000);
+setInterval(() => {
+  if (Date.now() - lastSync > 8000) syncFromServer();
+}, 8000);
 
 // === SUBIR ARCHIVO ===
 submitUpload.addEventListener('click', async () => {
@@ -79,16 +87,17 @@ submitUpload.addEventListener('click', async () => {
 
       const url = data.secure_url;
       const type = file.type.startsWith('image/') ? 'image' : 'video';
+      const timestamp = new Date().toISOString();
 
-      // Guardar local + enviar a Formspree
+      const newItem = { url, type, message, timestamp };
       const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
-      const newItem = { url, type, message, timestamp: new Date() };
       recuerdos.push(newItem);
       localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
 
+      // Enviar a Formspree para sincronizar
       const backup = new FormData();
       backup.append('data', JSON.stringify(recuerdos));
-      await fetch(FORMSPREE_ENDPOINT, { method: 'POST', body: backup }).catch(() => {});
+      await fetch(FORMSPREE_POST, { method: 'POST', body: backup }).catch(() => {});
 
       return true;
     } catch {
@@ -118,6 +127,9 @@ function loadGallery() {
       galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;">Sin recuerdos aún</p>';
       return;
     }
+
+    // Ordenar por fecha
+    recuerdos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     recuerdos.forEach((r, index) => {
       const item = document.createElement('div');
@@ -162,13 +174,14 @@ function loadGallery() {
           recuerdos.splice(index, 1);
           localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
           loadGallery();
+          // Opcional: reenviar a Formspree
         }
       });
     });
   }, 300);
 }
 
-// === MODALES Y QR (igual que antes) ===
+// === MODALES ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Sube tus recuerdos';
