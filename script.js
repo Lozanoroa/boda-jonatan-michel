@@ -2,6 +2,7 @@
 const CLOUDINARY_CLOUD_NAME = 'dnhrk78ul';
 const CLOUDINARY_UPLOAD_PRESET = 'boda2025';
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mqagrbyb';
+const SYNC_ENDPOINT = 'https://formspree.io/f/mqagrbyb'; // Recibe datos
 
 // === ELEMENTOS ===
 const uploadBtn = document.getElementById('uploadBtn');
@@ -29,88 +30,35 @@ let isAuthenticated = false;
 let qrGenerated = false;
 let currentMediaUrl = '';
 
-// === ABRIR SUBIDA ===
-uploadBtn.addEventListener('click', () => {
-  galleryModal.style.display = 'block';
-  modalTitle.textContent = 'Sube tus recuerdos';
-  selectFilesBtn.style.display = 'block';
-  messageInput.style.display = 'block';
-  submitUpload.style.display = 'block';
-  galleryGrid.style.display = 'none';
-  qrSection.style.display = 'none';
-  qrContainer.style.display = 'none';
-  messageInput.value = '';
-  setTimeout(() => mediaFile.click(), 300);
-});
-
-selectFilesBtn.addEventListener('click', () => mediaFile.click());
-
-// === CONTRASEÑA ===
-function requireAuth() {
-  if (!isAuthenticated) {
-    passwordModal.style.display = 'block';
-    return false;
+// === SINCRONIZAR CON FORMSREE (CADA 10 SEGUNDOS) ===
+async function syncFromServer() {
+  try {
+    const res = await fetch(SYNC_ENDPOINT);
+    const text = await res.text();
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      const serverData = JSON.parse(jsonMatch[0]);
+      const localData = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
+      const merged = [...localData];
+      serverData.forEach(item => {
+        if (!merged.find(m => m.url === item.url)) merged.push(item);
+      });
+      localStorage.setItem('recuerdos_boda', JSON.stringify(merged));
+      if (galleryGrid.style.display === 'block') loadGallery();
+    }
+  } catch (err) {
+    console.log('Sync falló (normal si no hay datos):', err);
   }
-  return true;
 }
 
-function openRestrictedView() {
-  galleryModal.style.display = 'block';
-  modalTitle.textContent = 'Galería de Recuerdos';
-  selectFilesBtn.style.display = 'none';
-  messageInput.style.display = 'none';
-  submitUpload.style.display = 'none';
-  galleryGrid.style.display = 'block';
-  qrSection.style.display = 'block';
-  qrContainer.style.display = 'none';
-  loadGallery();
-}
+// Carga inicial + cada 10 segundos
+syncFromServer();
+setInterval(syncFromServer, 10000);
 
-openGalleryBtn.addEventListener('click', () => {
-  if (requireAuth()) openRestrictedView();
-});
-
-enterAdmin.addEventListener('click', () => {
-  const pwd = adminPassword.value.trim();
-  if (pwd === 'Jonatanymichel') {
-    isAuthenticated = true;
-    passwordModal.style.display = 'none';
-    openRestrictedView();
-    adminPassword.value = '';
-  } else {
-    alert('Contraseña incorrecta');
-    adminPassword.value = '';
-  }
-});
-
-// === CERRAR MODALES ===
-document.querySelectorAll('.close, .close-preview').forEach(btn => {
-  btn.addEventListener('click', () => {
-    galleryModal.style.display = 'none';
-    passwordModal.style.display = 'none';
-    previewModal.style.display = 'none';
-    qrContainer.style.display = 'none';
-  });
-});
-
-window.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal')) e.target.style.display = 'none';
-});
-
-// === DESCARGAR MEDIA ===
-downloadMedia.addEventListener('click', () => {
-  if (!currentMediaUrl) return;
-  const link = document.createElement('a');
-  link.href = currentMediaUrl;
-  link.download = '';
-  link.click();
-});
-
-// === SUBIR ARCHIVOS ===
+// === SUBIR ARCHIVO ===
 submitUpload.addEventListener('click', async () => {
   const files = mediaFile.files;
   const message = messageInput.value.trim();
-
   if (files.length === 0) return alert('Selecciona al menos una foto o video');
 
   submitUpload.disabled = true;
@@ -127,27 +75,23 @@ submitUpload.addEventListener('click', async () => {
         body: formData
       });
       const data = await res.json();
-      if (!data.secure_url) throw new Error('Error en Cloudinary');
+      if (!data.secure_url) return false;
 
       const url = data.secure_url;
       const type = file.type.startsWith('image/') ? 'image' : 'video';
 
-      // Backup en Formspree
-      const backup = new FormData();
-      backup.append('url', url);
-      backup.append('type', type);
-      backup.append('message', message);
-      backup.append('timestamp', new Date().toLocaleString());
-      await fetch(FORMSPREE_ENDPOINT, { method: 'POST', body: backup, headers: { 'Accept': 'application/json' } }).catch(() => {});
-
-      // Guardar en localStorage
+      // Guardar local + enviar a Formspree
       const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
-      recuerdos.push({ url, type, message, timestamp: new Date() });
+      const newItem = { url, type, message, timestamp: new Date() };
+      recuerdos.push(newItem);
       localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
 
+      const backup = new FormData();
+      backup.append('data', JSON.stringify(recuerdos));
+      await fetch(FORMSPREE_ENDPOINT, { method: 'POST', body: backup }).catch(() => {});
+
       return true;
-    } catch (err) {
-      console.error('Error:', err);
+    } catch {
       return false;
     }
   });
@@ -155,20 +99,15 @@ submitUpload.addEventListener('click', async () => {
   const results = await Promise.all(uploadPromises);
   const success = results.filter(r => r).length;
 
-  if (success > 0) {
-    alert(`${success} recuerdo(s) subido(s)!`);
-    mediaFile.value = '';
-    messageInput.value = '';
-    if (galleryGrid.style.display === 'block') loadGallery();
-  } else {
-    alert('Error al subir.');
-  }
-
+  alert(success > 0 ? `${success} recuerdo(s) subido(s)!` : 'Error al subir.');
+  mediaFile.value = '';
+  messageInput.value = '';
   submitUpload.disabled = false;
   submitUpload.textContent = 'Subir Recuerdo';
+  if (galleryGrid.style.display === 'block') loadGallery();
 });
 
-// === CARGAR GALERÍA DESDE LOCALSTORAGE (SIEMPRE FUNCIONA) ===
+// === CARGAR GALERÍA ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
   galleryGrid.innerHTML = '<p style="text-align:center;">Cargando...</p>';
@@ -204,7 +143,6 @@ function loadGallery() {
       }
       galleryGrid.appendChild(item);
 
-      // === VISTA PREVIA ===
       const mediaEl = item.querySelector(r.type === 'image' ? '.preview-img' : '.preview-video');
       mediaEl.addEventListener('click', () => {
         currentMediaUrl = r.url;
@@ -215,7 +153,6 @@ function loadGallery() {
       });
     });
 
-    // === ELIMINAR ===
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -231,7 +168,79 @@ function loadGallery() {
   }, 300);
 }
 
-// === GENERAR QR ===
+// === MODALES Y QR (igual que antes) ===
+uploadBtn.addEventListener('click', () => {
+  galleryModal.style.display = 'block';
+  modalTitle.textContent = 'Sube tus recuerdos';
+  selectFilesBtn.style.display = 'block';
+  messageInput.style.display = 'block';
+  submitUpload.style.display = 'block';
+  galleryGrid.style.display = 'none';
+  qrSection.style.display = 'none';
+  qrContainer.style.display = 'none';
+  messageInput.value = '';
+  setTimeout(() => mediaFile.click(), 300);
+});
+
+selectFilesBtn.addEventListener('click', () => mediaFile.click());
+
+function requireAuth() {
+  if (!isAuthenticated) {
+    passwordModal.style.display = 'block';
+    return false;
+  }
+  return true;
+}
+
+function openRestrictedView() {
+  galleryModal.style.display = 'block';
+  modalTitle.textContent = 'Galería de Recuerdos';
+  selectFilesBtn.style.display = 'none';
+  messageInput.style.display = 'none';
+  submitUpload.style.display = 'none';
+  galleryGrid.style.display = 'block';
+  qrSection.style.display = 'block';
+  qrContainer.style.display = 'none';
+  loadGallery();
+}
+
+openGalleryBtn.addEventListener('click', () => {
+  if (requireAuth()) openRestrictedView();
+});
+
+enterAdmin.addEventListener('click', () => {
+  const pwd = adminPassword.value.trim();
+  if (pwd === 'Jonatanymichel') {
+    isAuthenticated = true;
+    passwordModal.style.display = 'none';
+    openRestrictedView();
+    adminPassword.value = '';
+  } else {
+    alert('Contraseña incorrecta');
+  }
+});
+
+document.querySelectorAll('.close, .close-preview').forEach(btn => {
+  btn.addEventListener('click', () => {
+    galleryModal.style.display = 'none';
+    passwordModal.style.display = 'none';
+    previewModal.style.display = 'none';
+    qrContainer.style.display = 'none';
+  });
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+});
+
+downloadMedia.addEventListener('click', () => {
+  if (!currentMediaUrl) return;
+  const link = document.createElement('a');
+  link.href = currentMediaUrl;
+  link.download = '';
+  link.click();
+});
+
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   qrContainer.style.display = 'block';
@@ -239,11 +248,7 @@ generateQr.addEventListener('click', () => {
   qrDiv.innerHTML = '';
   new QRCode(qrDiv, {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
-    width: 240,
-    height: 240,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
+    width: 240, height: 240, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H
   });
   generateQr.style.display = 'none';
   qrGenerated = true;
