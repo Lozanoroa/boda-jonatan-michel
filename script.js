@@ -1,4 +1,4 @@
-// === CONFIGURACIÓN 100% LISTA ===
+// === CONFIGURACIÓN ===
 const CLOUDINARY_CLOUD_NAME = 'dnhrk78ul';
 const CLOUDINARY_UPLOAD_PRESET = 'boda2025';
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mqagrbyb';
@@ -8,7 +8,10 @@ const uploadBtn = document.getElementById('uploadBtn');
 const openGalleryBtn = document.getElementById('openGalleryBtn');
 const galleryModal = document.getElementById('galleryModal');
 const passwordModal = document.getElementById('passwordModal');
-const uploadForm = document.getElementById('uploadForm');
+const mediaFile = document.getElementById('mediaFile');
+const selectFilesBtn = document.getElementById('selectFilesBtn');
+const messageInput = document.getElementById('messageInput');
+const submitUpload = document.getElementById('submitUpload');
 const galleryGrid = document.getElementById('galleryGrid');
 const qrSection = document.getElementById('qrSection');
 const generateQr = document.getElementById('generateQr');
@@ -21,17 +24,25 @@ const modalTitle = document.getElementById('modalTitle');
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === ABRIR MODAL PÚBLICO: SOLO SUBIDA ===
+// === ABRIR SELECTOR DIRECTO (iOS, Android, PC) ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
-  modalTitle.textContent = 'Sube tus recuerdos de nuestra boda';
-  uploadForm.style.display = 'block';
+  modalTitle.textContent = 'Sube tus recuerdos';
+  selectFilesBtn.style.display = 'block';
+  messageInput.style.display = 'block';
+  submitUpload.style.display = 'block';
   galleryGrid.style.display = 'none';
   qrSection.style.display = 'none';
   qrContainer.style.display = 'none';
+  messageInput.value = '';
 });
 
-// === REQUERIR CONTRASEÑA PARA VER GALERÍA Y QR ===
+// === BOTÓN SELECCIONAR ARCHIVOS ===
+selectFilesBtn.addEventListener('click', () => {
+  mediaFile.click();
+});
+
+// === REQUERIR CONTRASEÑA ===
 function requireAuth() {
   if (!isAuthenticated) {
     passwordModal.style.display = 'block';
@@ -40,18 +51,20 @@ function requireAuth() {
   return true;
 }
 
-// === ABRIR VISTA RESTRINGIDA (solo galería + QR) ===
+// === VISTA RESTRINGIDA (galería + QR) ===
 function openRestrictedView() {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Galería de Recuerdos';
-  uploadForm.style.display = 'none';     // ← NO SUBIDA
-  galleryGrid.style.display = 'block';   // ← GALERÍA
-  qrSection.style.display = 'block';     // ← QR
+  selectFilesBtn.style.display = 'none';
+  messageInput.style.display = 'none';
+  submitUpload.style.display = 'none';
+  galleryGrid.style.display = 'block';
+  qrSection.style.display = 'block';
   qrContainer.style.display = 'none';
   loadGallery();
 }
 
-// === ABRIR DESDE FOTO DE PAREJA (requiere contraseña) ===
+// === ABRIR DESDE FOTO DE PAREJA ===
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
     openRestrictedView();
@@ -89,21 +102,18 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === SUBIR ARCHIVOS (solo desde botón público) ===
-uploadForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const files = document.getElementById('mediaFile').files;
-  const message = document.getElementById('messageInput').value.trim();
+// === SUBIR ARCHIVOS ===
+submitUpload.addEventListener('click', async () => {
+  const files = mediaFile.files;
+  const message = messageInput.value.trim();
 
   if (files.length === 0) {
     alert('Selecciona al menos una foto o video');
     return;
   }
 
-  const submitBtn = uploadForm.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Subiendo...';
+  submitUpload.disabled = true;
+  submitUpload.textContent = 'Subiendo...';
 
   const uploadPromises = Array.from(files).map(async (file) => {
     const formData = new FormData();
@@ -140,35 +150,37 @@ uploadForm.addEventListener('submit', async (e) => {
       recuerdos.push({ url, type, message, timestamp: new Date() });
       localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
 
-      return { url, type, message };
+      return true;
     } catch (err) {
       console.error('Error subiendo:', err);
-      return null;
+      return false;
     }
   });
 
-  const results = (await Promise.all(uploadPromises)).filter(r => r);
+  const results = await Promise.all(uploadPromises);
+  const success = results.filter(r => r).length;
 
-  if (results.length > 0) {
-    alert(`${results.length} recuerdo(s) subido(s) con éxito!`);
-    uploadForm.reset();
+  if (success > 0) {
+    alert(`${success} recuerdo(s) subido(s) con éxito!`);
+    mediaFile.value = '';
+    messageInput.value = '';
   } else {
     alert('Error al subir. Intenta con menos archivos.');
   }
 
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Subir Recuerdo';
+  submitUpload.disabled = false;
+  submitUpload.textContent = 'Subir Recuerdo';
 });
 
-// === CARGAR GALERÍA CON BOTÓN ELIMINAR ===
+// === CARGAR GALERÍA CON ELIMINAR ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
-  galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
+  galleryGrid.innerHTML = '<p style="text-align:center;">Cargando...</p>';
 
   setTimeout(() => {
     galleryGrid.innerHTML = '';
     if (recuerdos.length === 0) {
-      galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;font-style:italic;">Sin recuerdos aún</p>';
+      galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;">Sin recuerdos aún</p>';
       return;
     }
 
@@ -176,26 +188,27 @@ function loadGallery() {
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.style.position = 'relative';
+      item.style.marginBottom = '20px';
 
       if (r.type === 'image') {
         item.innerHTML = `
-          <img src="${r.url}" loading="lazy" alt="Recuerdo">
-          <p>${r.message || ''}</p>
+          <img src="${r.url}" loading="lazy" style="width:100%;border-radius:12px;">
+          <p style="margin:8px 0;font-size:14px;">${r.message || ''}</p>
           <button class="delete-btn" data-index="${index}" style="position:absolute;top:8px;right:8px;background:red;color:white;border:none;padding:5px 8px;border-radius:50%;font-weight:bold;cursor:pointer;">X</button>
         `;
       } else {
         item.innerHTML = `
-          <video controls preload="metadata" style="width:100%;height:170px;object-fit:cover;border-radius:12px;">
+          <video controls preload="metadata" style="width:100%;height:180px;object-fit:cover;border-radius:12px;">
             <source src="${r.url}#t=0.1" type="video/mp4">
           </video>
-          <p>${r.message || ''}</p>
+          <p style="margin:8px 0;font-size:14px;">${r.message || ''}</p>
           <button class="delete-btn" data-index="${index}" style="position:absolute;top:8px;right:8px;background:red;color:white;border:none;padding:5px 8px;border-radius:50%;font-weight:bold;cursor:pointer;">X</button>
         `;
       }
       galleryGrid.appendChild(item);
     });
 
-    // === EVENTO ELIMINAR (solo con contraseña) ===
+    // === ELIMINAR (solo con contraseña) ===
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (!isAuthenticated) {
@@ -213,7 +226,7 @@ function loadGallery() {
   }, 300);
 }
 
-// === GENERAR QR EN NEGRO ===
+// === GENERAR QR NEGRO ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   
@@ -222,7 +235,7 @@ generateQr.addEventListener('click', () => {
   qrDiv.innerHTML = '';
   
   if (typeof QRCode === 'undefined') {
-    alert('Error: Recarga la página para cargar la librería QR.');
+    alert('Error: Recarga la página.');
     return;
   }
   
