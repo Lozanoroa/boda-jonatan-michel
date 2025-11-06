@@ -20,16 +20,16 @@ const enterAdmin = document.getElementById('enterAdmin');
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === ABRIR MODAL PÚBLICO (SUBIR) ===
+// === ABRIR MODAL PÚBLICO: SOLO SUBIDA (botón "Subir recuerdo") ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
   uploadForm.style.display = 'block';
-  galleryGrid.style.display = 'none';
-  qrSection.style.display = 'none';
+  galleryGrid.style.display = 'none';   // ← NO SE VE
+  qrSection.style.display = 'none';    // ← NO SE VE
   qrContainer.style.display = 'none';
 });
 
-// === REQUERIR CONTRASEÑA PARA GALERÍA Y QR ===
+// === REQUERIR CONTRASEÑA PARA VER GALERÍA Y QR ===
 function requireAuth() {
   if (!isAuthenticated) {
     passwordModal.style.display = 'block';
@@ -38,17 +38,17 @@ function requireAuth() {
   return true;
 }
 
-// === ABRIR VISTA COMPLETA (para todos con contraseña) ===
+// === ABRIR VISTA COMPLETA SOLO CON CONTRASEÑA ===
 function openAuthenticatedView() {
   galleryModal.style.display = 'block';
   uploadForm.style.display = 'block';
-  galleryGrid.style.display = 'block';   // ← TODOS VEN LA GALERÍA
-  qrSection.style.display = 'block';     // ← TODOS VEN EL BOTÓN QR
+  galleryGrid.style.display = 'block';   // ← VISIBLE
+  qrSection.style.display = 'block';     // ← VISIBLE
   qrContainer.style.display = 'none';
-  loadGallery(); // ← Carga galería con todo
+  loadGallery();
 }
 
-// === ABRIR DESDE FOTO DE PAREJA ===
+// === ABRIR DESDE FOTO DE PAREJA (requiere contraseña) ===
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
     openAuthenticatedView();
@@ -86,7 +86,7 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === SUBIR ARCHIVOS A CLOUDINARY + FORMSPREE + LOCALSTORAGE ===
+// === SUBIR ARCHIVOS (PÚBLICO, desde botón "Subir recuerdo") ===
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -108,12 +108,12 @@ uploadForm.addEventListener('submit', async (e) => {
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const theResponse = await fetch(
+      const res = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
         { method: 'POST', body: formData }
       );
 
-      const data = await theResponse.json();
+      const data = await res.json();
       if (!data.secure_url) throw new Error('Error en Cloudinary');
 
       const url = data.secure_url;
@@ -132,7 +132,7 @@ uploadForm.addEventListener('submit', async (e) => {
         headers: { 'Accept': 'application/json' }
       }).catch(() => {});
 
-      // Guardar en localStorage (para que todos con contraseña vean)
+      // Guardar en localStorage
       const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
       recuerdos.push({ url, type, message, timestamp: new Date() });
       localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
@@ -149,7 +149,7 @@ uploadForm.addEventListener('submit', async (e) => {
   if (results.length > 0) {
     alert(`${results.length} recuerdo(s) subido(s) con éxito!`);
     uploadForm.reset();
-    if (isAuthenticated) loadGallery(); // ← Recarga si está autenticado
+    if (isAuthenticated) loadGallery(); // ← Solo recarga si ya está autenticado
   } else {
     alert('Error al subir. Intenta con menos archivos.');
   }
@@ -158,7 +158,7 @@ uploadForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Subir Recuerdo';
 });
 
-// === CARGAR GALERÍA DESDE LOCALSTORAGE (todos con contraseña) ===
+// === CARGAR GALERÍA (solo con contraseña) ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
@@ -189,7 +189,7 @@ function loadGallery() {
   }, 300);
 }
 
-// === GENERAR QR EN NEGRO ===
+// === GENERAR QR EN NEGRO (solo con contraseña) ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   
@@ -206,8 +206,8 @@ generateQr.addEventListener('click', () => {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
     width: 240,
     height: 240,
-    colorDark: '#000000',  // ← NEGRO
-    colorLight: '#ffffff', // ← BLANCO
+    colorDark: '#000000',   // ← NEGRO
+    colorLight: '#ffffff',  // ← BLANCO
     correctLevel: QRCode.CorrectLevel.H
   });
   
