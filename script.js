@@ -24,7 +24,7 @@ const modalTitle = document.getElementById('modalTitle');
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === ABRIR GALERÍA DIRECTO EN MÓVIL / ARCHIVOS EN PC ===
+// === ABRIR GALERÍA DIRECTO ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Sube tus recuerdos';
@@ -36,16 +36,13 @@ uploadBtn.addEventListener('click', () => {
   qrContainer.style.display = 'none';
   messageInput.value = '';
 
-  // ABRE AUTOMÁTICAMENTE EL SELECTOR
   setTimeout(() => mediaFile.click(), 300);
 });
 
-// === BOTÓN SELECCIONAR (por si no abre directo) ===
 selectFilesBtn.addEventListener('click', () => {
   mediaFile.click();
 });
 
-// === REQUERIR CONTRASEÑA ===
 function requireAuth() {
   if (!isAuthenticated) {
     passwordModal.style.display = 'block';
@@ -54,7 +51,6 @@ function requireAuth() {
   return true;
 }
 
-// === VISTA RESTRINGIDA ===
 function openRestrictedView() {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Galería de Recuerdos';
@@ -67,14 +63,12 @@ function openRestrictedView() {
   loadGallery();
 }
 
-// === FOTO DE PAREJA ===
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
     openRestrictedView();
   }
 });
 
-// === INGRESAR CON CONTRASEÑA ===
 enterAdmin.addEventListener('click', () => {
   const pwd = adminPassword.value.trim();
   if (pwd === 'Jonatanymichel') {
@@ -88,7 +82,6 @@ enterAdmin.addEventListener('click', () => {
   }
 });
 
-// === CERRAR MODALES ===
 document.querySelectorAll('.close').forEach(btn => {
   btn.addEventListener('click', () => {
     galleryModal.style.display = 'none';
@@ -105,7 +98,6 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === SUBIR ARCHIVOS ===
 submitUpload.addEventListener('click', async () => {
   const files = mediaFile.files;
   const message = messageInput.value.trim();
@@ -173,7 +165,6 @@ submitUpload.addEventListener('click', async () => {
   submitUpload.textContent = 'Subir Recuerdo';
 });
 
-// === CARGAR GALERÍA CON ELIMINAR ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
   galleryGrid.innerHTML = '<p style="text-align:center;">Cargando...</p>';
@@ -226,7 +217,6 @@ function loadGallery() {
   }, 300);
 }
 
-// === GENERAR QR NEGRO ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   
@@ -252,7 +242,6 @@ generateQr.addEventListener('click', () => {
   qrGenerated = true;
 });
 
-// === DESCARGAR QR ===
 downloadQr.addEventListener('click', () => {
   const canvas = document.querySelector('#qrcode canvas');
   if (!canvas) {
