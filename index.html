@@ -4,29 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bienvenidos a Nuestra Boda</title>
-  <!-- FUENTES -->
   <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Themysion:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  <!-- QR LIBRERÍA -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <div class="page-container">
     <main class="content">
-
-      <!-- TÍTULO CON MARCO FLORAL -->
       <div class="title-container">
         <img src="imagenes/FLORES ARRIBA.png" alt="Marco floral" class="floral-frame" />
         <h1 class="title-inside">BIENVENIDOS A NUESTRA BODA</h1>
       </div>
-
       <h2 class="names">Jonatan y Michel</h2>
-
-      <!-- FOTO CIRCULAR -->
       <div class="photo-wrapper" id="openGalleryBtn">
         <img src="imagenes/jhonathan y michel.png" alt="Jonatan y Michel" class="couple-photo" />
       </div>
-
       <p class="message">
         Queridos familiares y amigos,<br>
         Nuestra boda es un día lleno de amor, risas y momentos que atesoraremos por siempre, ¡ustedes fueron parte esencial de esa magia!<br>
@@ -35,10 +27,7 @@
         ¡Gracias por ser parte de nuestro gran día y por ayudarnos a crear un álbum lleno de amor!<br>
         Con todo nuestro cariño
       </p>
-
       <h2 class="names bottom">Jonatan y Michel</h2>
-
-      <!-- BOTÓN SUBIR RECUERDO -->
       <button class="upload-btn" id="uploadBtn">Subir recuerdo</button>
     </main>
   </div>
@@ -58,18 +47,10 @@
     <div class="modal-content">
       <span class="close">X</span>
       <h2 id="modalTitle">Sube tus recuerdos</h2>
-
-      <!-- INPUT OCULTO -->
       <input type="file" id="mediaFile" accept="image/*,video/*" multiple style="display:none;" />
       <button id="selectFilesBtn" class="select-btn">Seleccionar fotos o videos</button>
-
-      <!-- MENSAJE -->
       <textarea id="messageInput" placeholder="Escribe un mensaje (opcional)" maxlength="600" class="message-textarea"></textarea>
-
-      <!-- SUBIR -->
       <button id="submitUpload" class="submit-btn">Subir Recuerdo</button>
-
-      <!-- QR -->
       <div class="qr-section" id="qrSection" style="display:none;">
         <button id="generateQr">Generar QR para Invitados</button>
         <div id="qrContainer" style="display:none; margin:20px 0;">
@@ -77,8 +58,6 @@
           <button id="downloadQr">Descargar QR</button>
         </div>
       </div>
-
-      <!-- GALERÍA -->
       <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
     </div>
   </div>
