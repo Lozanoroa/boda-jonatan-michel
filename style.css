@@ -13,7 +13,6 @@ body {
   overflow-x: hidden;
 }
 
-/* === CONTENEDOR PRINCIPAL === */
 .page-container {
   min-height: 100vh;
   display: flex;
@@ -30,7 +29,6 @@ body {
   padding: 20px;
 }
 
-/* === TÍTULO DENTRO DEL MARCO FLORAL (NO SE SALE) === */
 .title-container {
   position: relative;
   margin: 20px 0;
@@ -60,7 +58,6 @@ body {
   line-height: 1.2;
 }
 
-/* === NOMBRES EN FUENTE THEMYSSION === */
 .names {
   color: #000000;
   font-family: 'Themysion', cursive;
@@ -69,7 +66,6 @@ body {
   letter-spacing: 1px;
 }
 
-/* === FOTO DE PAREJA CIRCULAR Y CENTRADA === */
 .photo-wrapper {
   margin: 30px auto;
   cursor: pointer;
@@ -91,7 +87,6 @@ body {
   object-fit: cover;
 }
 
-/* === MENSAJE === */
 .message {
   font-size: 1.1rem;
   color: #000000;
@@ -102,7 +97,6 @@ body {
   line-height: 1.8;
 }
 
-/* === BOTÓN SUBIR RECUERDO === */
 .upload-btn {
   background: #9f5b4c;
   color: white;
@@ -123,7 +117,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* === MODALES (GENERAL) === */
 .modal {
   display: none;
   position: fixed;
@@ -136,14 +129,13 @@ body {
   overflow-y: auto;
 }
 
-/* === MODAL DE SUBIDA Y GALERÍA === */
-.modal-content {
+.modal-content,
+.preview-content {
   background: white;
   margin: 5% auto;
   padding: 30px;
   border-radius: 20px;
   max-width: 90%;
-  width: 420px;
   text-align: center;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
   display: flex;
@@ -157,20 +149,11 @@ body {
   padding: 25px;
 }
 
-/* === MODAL DE VISTA PREVIA === */
 .preview-content {
-  background: white;
-  margin: 5% auto;
-  padding: 20px;
-  border-radius: 20px;
-  max-width: 90%;
   width: 500px;
-  text-align: center;
-  position: relative;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  padding: 20px;
 }
 
-/* === BOTONES DE CERRAR === */
 .close,
 .close-preview {
   position: absolute;
@@ -187,7 +170,6 @@ body {
   color: #000000;
 }
 
-/* === BOTONES DEL FORMULARIO === */
 .select-btn,
 .submit-btn,
 .download-btn {
@@ -210,7 +192,6 @@ body {
   background: #8b4d3f;
 }
 
-/* === CAMPO DE TEXTO === */
 .message-textarea {
   width: 100%;
   max-width: 300px;
@@ -229,7 +210,6 @@ body {
   border-color: #9f5b4c;
 }
 
-/* === GALERÍA VERTICAL === */
 .gallery-grid {
   display: flex;
   flex-direction: column;
@@ -256,7 +236,6 @@ body {
 .gallery-item video {
   width: 100%;
   border-radius: 12px;
-  display: block;
 }
 
 .gallery-item p {
@@ -265,10 +244,8 @@ body {
   color: #000000;
   text-align: left;
   font-style: italic;
-  word-wrap: break-word;
 }
 
-/* === BOTÓN ELIMINAR (X ROJA) === */
 .delete-btn {
   position: absolute;
   top: 10px;
@@ -282,28 +259,8 @@ body {
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
-  transition: all 0.2s ease;
 }
 
-.delete-btn:hover {
-  background: #b71c1c;
-  transform: scale(1.1);
-}
-
-/* === VISTA PREVIA EN MODAL === */
-#previewMedia {
-  margin: 20px 0;
-}
-
-#previewMedia img,
-#previewMedia video {
-  max-width: 100%;
-  max-height: 70vh;
-  border-radius: 12px;
-}
-
-/* === SECCIÓN QR === */
 .qr-section {
   margin: 30px 0;
   width: 100%;
@@ -328,33 +285,8 @@ body {
   border-radius: 25px;
   cursor: pointer;
   font-size: 14px;
-  margin-top: 10px;
 }
 
-#downloadQr:hover {
-  background: #8b4d3f;
-}
-
-/* === SCROLL SUAVE EN GALERÍA === */
-.gallery-grid::-webkit-scrollbar {
-  width: 8px;
-}
-
-.gallery-grid::-webkit-scrollbar-track {
-  background: #f1e1d6;
-  border-radius: 10px;
-}
-
-.gallery-grid::-webkit-scrollbar-thumb {
-  background: #9f5b4c;
-  border-radius: 10px;
-}
-
-.gallery-grid::-webkit-scrollbar-thumb:hover {
-  background: #8b4d3f;
-}
-
-/* === RESPONSIVE === */
 @media (max-width: 480px) {
   .title-inside {
     font-size: 1.6rem;
@@ -370,10 +302,6 @@ body {
   .upload-btn {
     font-size: 1.1rem;
     padding: 14px 30px;
-  }
-  .modal-content {
-    width: 92%;
-    padding: 20px;
   }
   .preview-content {
     width: 92%;
