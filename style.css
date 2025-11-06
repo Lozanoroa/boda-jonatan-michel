@@ -8,7 +8,7 @@
 body {
   font-family: 'Old Standard TT', serif;
   background: #fdf6f0;
-  color: #5d4037;
+  color: #000000;
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -30,16 +30,20 @@ body {
   padding: 20px;
 }
 
-/* === TÍTULO EN OLD STANDARD === */
+/* === TÍTULO DENTRO DEL MARCO (NO SE SALE) === */
 .title-container {
   position: relative;
   margin: 20px 0;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .floral-frame {
   width: 100%;
-  max-width: 600px;
   height: auto;
+  display: block;
 }
 
 .title-inside {
@@ -47,31 +51,35 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #9f5b4c;
+  color: #000000;
   font-family: 'Old Standard TT', serif;
-  font-size: 2.8rem;
+  font-size: 2.2rem;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  white-space: nowrap;
+  text-align: center;
+  white-space: normal;
+  padding: 20px;
+  max-width: 90%;
+  line-height: 1.2;
 }
 
-/* === NOMBRES === */
+/* === NOMBRES EN THEMYSSION === */
 .names {
-  color: #9f5b4c;
+  color: #000000;
+  font-family: 'Themysion', cursive;
   font-size: 2.5rem;
   margin: 20px 0;
   letter-spacing: 1px;
 }
 
-/* === FOTO CIRCULAR (CORREGIDO) === */
+/* === FOTO CIRCULAR CENTRADA === */
 .photo-wrapper {
-  margin: 30px 0;
+  margin: 30px auto;
   cursor: pointer;
   width: 300px;
   height: 300px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(159, 91, 76, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
 
@@ -85,10 +93,10 @@ body {
   object-fit: cover;
 }
 
-/* === MENSAJE === */
+/* === MENSAJE NEGRO === */
 .message {
   font-size: 1.1rem;
-  color: #6d4c41;
+  color: #000000;
   margin: 30px auto;
   max-width: 700px;
   padding: 0 20px;
@@ -96,7 +104,7 @@ body {
   line-height: 1.8;
 }
 
-/* === BOTÓN SUBIR RECUERDO EN OLD STANDARD === */
+/* === BOTÓN SUBIR NEGRO === */
 .upload-btn {
   background: #9f5b4c;
   color: white;
@@ -108,14 +116,13 @@ body {
   border-radius: 50px;
   cursor: pointer;
   margin: 30px 0;
-  box-shadow: 0 4px 15px rgba(159, 91, 76, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .upload-btn:hover {
   background: #8b4d3f;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(159, 91, 76, 0.4);
 }
 
 /* === MODALES === */
@@ -162,10 +169,10 @@ body {
 }
 
 .close:hover {
-  color: #9f5b4c;
+  color: #000000;
 }
 
-/* === FORMULARIO === */
+/* === FORMULARIO NEGRO === */
 .select-btn, .submit-btn {
   background: #9f5b4c;
   color: white;
@@ -189,19 +196,20 @@ body {
   max-width: 300px;
   height: 110px;
   padding: 14px;
-  border: 2px solid #e0c7bc;
+  border: 2px solid #ccc;
   border-radius: 16px;
   font-family: 'Old Standard TT', serif;
   font-size: 15px;
   resize: none;
   outline: none;
+  color: #000000;
 }
 
 .message-textarea:focus {
   border-color: #9f5b4c;
 }
 
-/* === GALERÍA === */
+/* === GALERÍA NEGRO === */
 .gallery-grid {
   display: flex;
   flex-direction: column;
@@ -232,7 +240,7 @@ body {
 .gallery-item p {
   margin: 12px 15px 8px;
   font-size: 14px;
-  color: #6d4c41;
+  color: #000000;
   text-align: left;
   font-style: italic;
 }
@@ -282,7 +290,10 @@ body {
 
 /* === RESPONSIVE === */
 @media (max-width: 480px) {
-  .title-inside { font-size: 1.8rem; }
+  .title-inside { 
+    font-size: 1.6rem; 
+    padding: 15px;
+  }
   .names { font-size: 2rem; }
   .photo-wrapper { width: 250px; height: 250px; }
   .upload-btn { font-size: 1.1rem; padding: 14px 30px; }
