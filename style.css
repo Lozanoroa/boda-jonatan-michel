@@ -1,4 +1,4 @@
-/* === RESET BÁSICO === */
+/* === RESET === */
 * {
   margin: 0;
   padding: 0;
@@ -13,7 +13,7 @@ body {
   overflow-x: hidden;
 }
 
-/* === CONTENEDOR PRINCIPAL === */
+/* === CONTENEDOR === */
 .page-container {
   min-height: 100vh;
   display: flex;
@@ -30,7 +30,7 @@ body {
   padding: 20px;
 }
 
-/* === TÍTULO CON MARCO FLORAL === */
+/* === TÍTULO EN OLD STANDARD === */
 .title-container {
   position: relative;
   margin: 20px 0;
@@ -48,49 +48,41 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   color: #9f5b4c;
-  font-family: 'Themysion', cursive;
+  font-family: 'Old Standard TT', serif;
   font-size: 2.8rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
   white-space: nowrap;
 }
 
-@media (max-width: 480px) {
-  .title-inside {
-    font-size: 1.8rem;
-  }
-}
-
 /* === NOMBRES === */
 .names {
-  font-family: 'Themysion', cursive;
   color: #9f5b4c;
   font-size: 2.5rem;
   margin: 20px 0;
   letter-spacing: 1px;
 }
 
-.names.bottom {
-  margin-top: 30px;
-}
-
-/* === FOTO DE PAREJA === */
+/* === FOTO CIRCULAR (CORREGIDO) === */
 .photo-wrapper {
   margin: 30px 0;
   cursor: pointer;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(159, 91, 76, 0.3);
   transition: transform 0.3s ease;
 }
 
 .photo-wrapper:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .couple-photo {
   width: 100%;
-  max-width: 400px;
-  height: auto;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(159, 91, 76, 0.2);
+  height: 100%;
+  object-fit: cover;
 }
 
 /* === MENSAJE === */
@@ -104,14 +96,15 @@ body {
   line-height: 1.8;
 }
 
-/* === BOTÓN SUBIR RECUERDO === */
+/* === BOTÓN SUBIR RECUERDO EN OLD STANDARD === */
 .upload-btn {
   background: #9f5b4c;
   color: white;
   border: none;
-  padding: 14px 32px;
-  font-size: 1.1rem;
-  font-family: 'Themysion', cursive;
+  padding: 16px 36px;
+  font-family: 'Old Standard TT', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
   border-radius: 50px;
   cursor: pointer;
   margin: 30px 0;
@@ -147,7 +140,6 @@ body {
   width: 420px;
   text-align: center;
   box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -173,15 +165,15 @@ body {
   color: #9f5b4c;
 }
 
-/* === FORMULARIO DE SUBIDA === */
+/* === FORMULARIO === */
 .select-btn, .submit-btn {
   background: #9f5b4c;
   color: white;
   border: none;
   padding: 14px 20px;
   border-radius: 30px;
+  font-family: 'Old Standard TT', serif;
   font-size: 16px;
-  font-family: 'Themysion', cursive;
   cursor: pointer;
   width: 100%;
   max-width: 300px;
@@ -190,7 +182,6 @@ body {
 
 .select-btn:hover, .submit-btn:hover {
   background: #8b4d3f;
-  transform: translateY(-1px);
 }
 
 .message-textarea {
@@ -204,14 +195,13 @@ body {
   font-size: 15px;
   resize: none;
   outline: none;
-  transition: border 0.3s ease;
 }
 
 .message-textarea:focus {
   border-color: #9f5b4c;
 }
 
-/* === GALERÍA VERTICAL Y CENTRADA === */
+/* === GALERÍA === */
 .gallery-grid {
   display: flex;
   flex-direction: column;
@@ -221,7 +211,6 @@ body {
   max-height: 65vh;
   overflow-y: auto;
   width: 100%;
-  margin-top: 10px;
 }
 
 .gallery-item {
@@ -235,17 +224,8 @@ body {
   padding-bottom: 10px;
 }
 
-.gallery-item img {
+.gallery-item img, .gallery-item video {
   width: 100%;
-  height: auto;
-  border-radius: 12px;
-  display: block;
-}
-
-.gallery-item video {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
   border-radius: 12px;
 }
 
@@ -255,10 +235,9 @@ body {
   color: #6d4c41;
   text-align: left;
   font-style: italic;
-  word-wrap: break-word;
 }
 
-/* === BOTÓN ELIMINAR (X ROJA) === */
+/* === ELIMINAR === */
 .delete-btn {
   position: absolute;
   top: 10px;
@@ -272,16 +251,9 @@ body {
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
-  transition: all 0.2s ease;
 }
 
-.delete-btn:hover {
-  background: #b71c1c;
-  transform: scale(1.1);
-}
-
-/* === SECCIÓN QR === */
+/* === QR === */
 .qr-section {
   margin: 30px 0;
   width: 100%;
@@ -306,54 +278,12 @@ body {
   border-radius: 25px;
   cursor: pointer;
   font-size: 14px;
-  margin-top: 10px;
-}
-
-#downloadQr:hover {
-  background: #8b4d3f;
 }
 
 /* === RESPONSIVE === */
 @media (max-width: 480px) {
-  .modal-content {
-    width: 92%;
-    padding: 20px;
-    gap: 15px;
-  }
-
-  .title-inside {
-    font-size: 1.6rem;
-  }
-
-  .names {
-    font-size: 2rem;
-  }
-
-  .message {
-    font-size: 1rem;
-    padding: 0 15px;
-  }
-
-  .gallery-item {
-    max-width: 300px;
-  }
-}
-
-/* === SCROLL SUAVE EN GALERÍA === */
-.gallery-grid::-webkit-scrollbar {
-  width: 8px;
-}
-
-.gallery-grid::-webkit-scrollbar-track {
-  background: #f1e1d6;
-  border-radius: 10px;
-}
-
-.gallery-grid::-webkit-scrollbar-thumb {
-  background: #9f5b4c;
-  border-radius: 10px;
-}
-
-.gallery-grid::-webkit-scrollbar-thumb:hover {
-  background: #8b4d3f;
+  .title-inside { font-size: 1.8rem; }
+  .names { font-size: 2rem; }
+  .photo-wrapper { width: 250px; height: 250px; }
+  .upload-btn { font-size: 1.1rem; padding: 14px 30px; }
 }
