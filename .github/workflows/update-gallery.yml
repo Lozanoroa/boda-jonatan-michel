@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   update:
@@ -16,24 +15,24 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Instalar jq
-        run: sudo apt-get install -y jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Actualizar JSON
         run: |
-          INPUT='data/recuerdos.json'
+          FILE="data/recuerdos.json"
           PAYLOAD='${{ toJson(github.event.client_payload.data) }}'
-          
-          if [ ! -f "$INPUT" ]; then
-            echo "[]" > "$INPUT"
-          fi
-          
-          jq -s 'reduce .[] as $item (.; . + $item)' "$INPUT" <(echo "$PAYLOAD") > temp.json
-          mv temp.json "$INPUT"
+
+          # Crear archivo si no existe
+          [ -f "$FILE" ] || echo "[]" > "$FILE"
+
+          # Combinar arrays
+          jq -s 'reduce .[] as $item (.; . + $item)' "$FILE" <(echo "$PAYLOAD") > temp.json
+          mv temp.json "$FILE"
 
       - name: Commit y Push
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config user.name "Pipedream"
+          git config user.email "pipedream@github.com"
           git add data/recuerdos.json
           git commit -m "Actualizar galería" || exit 0
           git push
