@@ -40,13 +40,19 @@ function requireAuth() {
 
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
-    galleryModal.style.display = 'block';
-    uploadForm.style.display = 'block';
-    galleryGrid.style.display = 'block';
-    qrSection.style.display = 'block';
-    loadGallery();
+    openAdminView();
   }
 });
+
+// === FUNCIÓN PARA VISTA ADMIN ===
+function openAdminView() {
+  galleryModal.style.display = 'block';
+  uploadForm.style.display = 'block';
+  galleryGrid.style.display = 'block';
+  qrSection.style.display = 'block';
+  qrContainer.style.display = 'none';
+  loadGallery();
+}
 
 // === INGRESAR CON CONTRASEÑA ===
 enterAdmin.addEventListener('click', () => {
@@ -54,11 +60,7 @@ enterAdmin.addEventListener('click', () => {
   if (pwd === 'Jonatanymichel') {
     isAuthenticated = true;
     passwordModal.style.display = 'none';
-    galleryModal.style.display = 'block';
-    uploadForm.style.display = 'block';
-    galleryGrid.style.display = 'block';
-    qrSection.style.display = 'block';
-    loadGallery();
+    openAdminView();
     adminPassword.value = '';
   } else {
     alert('Contraseña incorrecta');
@@ -116,7 +118,7 @@ uploadForm.addEventListener('submit', async (e) => {
       const url = data.secure_url;
       const type = file.type.startsWith('image/') ? 'image' : 'video';
 
-      // Backup en Formspree (email)
+      // Backup en Formspree
       const backup = new FormData();
       backup.append('url', url);
       backup.append('type', type);
@@ -144,7 +146,7 @@ uploadForm.addEventListener('submit', async (e) => {
   const results = (await Promise.all(uploadPromises)).filter(r => r);
 
   if (results.length > 0) {
-    alert(`¡${results.length} recuerdo(s) subido(s) con éxito!`);
+    alert(`${results.length} recuerdo(s) subido(s) con éxito!`);
     uploadForm.reset();
     if (isAuthenticated) loadGallery();
   } else {
@@ -186,12 +188,19 @@ function loadGallery() {
   }, 300);
 }
 
-// === GENERAR QR ===
+// === GENERAR QR (100% FUNCIONAL) ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
+  
   qrContainer.style.display = 'block';
   const qrDiv = document.getElementById('qrcode');
   qrDiv.innerHTML = '';
+  
+  if (typeof QRCode === 'undefined') {
+    alert('Error: Recarga la página para cargar la librería QR.');
+    return;
+  }
+  
   new QRCode(qrDiv, {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
     width: 240,
@@ -200,6 +209,7 @@ generateQr.addEventListener('click', () => {
     colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.H
   });
+  
   generateQr.style.display = 'none';
   qrGenerated = true;
 });
