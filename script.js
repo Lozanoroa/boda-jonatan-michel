@@ -24,7 +24,7 @@ const modalTitle = document.getElementById('modalTitle');
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === ABRIR SELECTOR DIRECTO (iOS, Android, PC) ===
+// === ABRIR GALERÍA DIRECTO EN MÓVIL / ARCHIVOS EN PC ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Sube tus recuerdos';
@@ -35,9 +35,12 @@ uploadBtn.addEventListener('click', () => {
   qrSection.style.display = 'none';
   qrContainer.style.display = 'none';
   messageInput.value = '';
+
+  // ABRE AUTOMÁTICAMENTE EL SELECTOR
+  setTimeout(() => mediaFile.click(), 300);
 });
 
-// === BOTÓN SELECCIONAR ARCHIVOS ===
+// === BOTÓN SELECCIONAR (por si no abre directo) ===
 selectFilesBtn.addEventListener('click', () => {
   mediaFile.click();
 });
@@ -51,7 +54,7 @@ function requireAuth() {
   return true;
 }
 
-// === VISTA RESTRINGIDA (galería + QR) ===
+// === VISTA RESTRINGIDA ===
 function openRestrictedView() {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Galería de Recuerdos';
@@ -64,7 +67,7 @@ function openRestrictedView() {
   loadGallery();
 }
 
-// === ABRIR DESDE FOTO DE PAREJA ===
+// === FOTO DE PAREJA ===
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
     openRestrictedView();
@@ -132,7 +135,6 @@ submitUpload.addEventListener('click', async () => {
       const url = data.secure_url;
       const type = file.type.startsWith('image/') ? 'image' : 'video';
 
-      // Backup en Formspree
       const backup = new FormData();
       backup.append('url', url);
       backup.append('type', type);
@@ -145,7 +147,6 @@ submitUpload.addEventListener('click', async () => {
         headers: { 'Accept': 'application/json' }
       }).catch(() => {});
 
-      // Guardar en localStorage
       const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
       recuerdos.push({ url, type, message, timestamp: new Date() });
       localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
@@ -194,7 +195,7 @@ function loadGallery() {
         item.innerHTML = `
           <img src="${r.url}" loading="lazy" style="width:100%;border-radius:12px;">
           <p style="margin:8px 0;font-size:14px;">${r.message || ''}</p>
-          <button class="delete-btn" data-index="${index}" style="position:absolute;top:8px;right:8px;background:red;color:white;border:none;padding:5px 8px;border-radius:50%;font-weight:bold;cursor:pointer;">X</button>
+          <button class="delete-btn" data-index="${index}">X</button>
         `;
       } else {
         item.innerHTML = `
@@ -202,13 +203,12 @@ function loadGallery() {
             <source src="${r.url}#t=0.1" type="video/mp4">
           </video>
           <p style="margin:8px 0;font-size:14px;">${r.message || ''}</p>
-          <button class="delete-btn" data-index="${index}" style="position:absolute;top:8px;right:8px;background:red;color:white;border:none;padding:5px 8px;border-radius:50%;font-weight:bold;cursor:pointer;">X</button>
+          <button class="delete-btn" data-index="${index}">X</button>
         `;
       }
       galleryGrid.appendChild(item);
     });
 
-    // === ELIMINAR (solo con contraseña) ===
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (!isAuthenticated) {
