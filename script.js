@@ -31,41 +31,42 @@ let qrGenerated = false;
 
 // === CARGAR GALERÍA ===
 async function loadGallery() {
-  galleryGrid.innerHTML = '<p style="text-align:center;">Cargando...</p>';
+  galleryGrid.innerHTML = '<p style="text-align:center;padding:20px;color:#8d6e63;">Cargando recuerdos...</p>';
   try {
     const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
     if (!res.ok) throw new Error();
     const data = await res.json();
     galleryGrid.innerHTML = '';
     if (!Array.isArray(data) || data.length === 0) {
-      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;">Sin recuerdos aún</p>';
+      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;color:#8d6e63;">Aún no hay recuerdos. ¡Sé el primero en compartir!</p>';
     }
 
     data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     data.forEach(d => {
       const item = document.createElement('div');
       item.className = 'gallery-item';
-      item.style.marginBottom = '20px';
+      item.onclick = () => openPreview(d.url, d.type);
       const mediaHTML = d.type === 'image'
-        ? `<img src="${d.url}" loading="lazy" style="width:100%;border-radius:12px;cursor:pointer;">`
-        : `<video controls style="width:100%;height:180px;border-radius:12px;cursor:pointer;"><source src="${d.url}#t=0.1"></video>`;
-      item.innerHTML = mediaHTML + `<p style="margin:8px 0;font-size:14px;">${d.message || ''}</p>`;
-      
-      item.querySelector(d.type === 'image' ? 'img' : 'video').onclick = () => {
-        currentUrl = d.url;
-        previewModal.style.display = 'block';
-        previewMedia.innerHTML = d.type === 'image'
-          ? `<img src="${d.url}" style="max-width:100%;max-height:70vh;border-radius:12px;">`
-          : `<video controls style="max-width:100%;max-height:70vh;border-radius:12px;"><source src="${d.url}"></video>`;
-      };
+        ? `<img src="${d.url}" loading="lazy">`
+        : `<video controls><source src="${d.url}#t=0.1"></video>`;
+      item.innerHTML = mediaHTML + `<p>${d.message || ''}</p>`;
       galleryGrid.appendChild(item);
     });
   } catch {
-    galleryGrid.innerHTML = '<p style="text-align:center;color:red;">Error. Recarga.</p>';
+    galleryGrid.innerHTML = '<p style="text-align:center;color:red;">Error de conexión. Intenta de nuevo.</p>';
   }
 }
 
-// === SUBIR ARCHIVOS ===
+// === PREVIEW ===
+function openPreview(url, type) {
+  currentUrl = url;
+  previewModal.style.display = 'block';
+  previewMedia.innerHTML = type === 'image'
+    ? `<img src="${url}" style="max-width:100%;max-height:70vh;border-radius:15px;">`
+    : `<video controls style="max-width:100%;max-height:70vh;border-radius:15px;"><source src="${url}"></video>`;
+}
+
+// === SUBIR ===
 submitUpload.onclick = async () => {
   const files = mediaFile.files;
   const msg = messageInput.value.trim();
@@ -80,10 +81,7 @@ submitUpload.onclick = async () => {
     fd.append('file', file);
     fd.append('upload_preset', CLOUDINARY_PRESET);
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/auto/upload`, {
-        method: 'POST',
-        body: fd
-      });
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/auto/upload`, { method: 'POST', body: fd });
       const data = await res.json();
       if (data.secure_url) {
         items.push({
@@ -104,7 +102,7 @@ submitUpload.onclick = async () => {
         body: JSON.stringify(items)
       });
       if (r.ok) {
-        alert(`${items.length} subido(s) y sincronizado!`);
+        alert(`¡${items.length} recuerdo(s) subido(s) y sincronizado(s)!`);
         setTimeout(loadGallery, 5000);
       } else throw new Error();
     } catch {
@@ -121,11 +119,8 @@ submitUpload.onclick = async () => {
 uploadBtn.onclick = () => {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Sube tus recuerdos';
-  selectFilesBtn.style.display = 'block';
-  messageInput.style.display = 'block';
-  submitUpload.style.display = 'block';
-  galleryGrid.style.display = 'none';
-  qrSection.style.display = 'none';
+  document.querySelector('#galleryGrid').style.display = 'none';
+  document.querySelector('#qrSection').style.display = 'none';
   setTimeout(() => mediaFile.click(), 300);
 };
 
@@ -150,11 +145,8 @@ enterAdmin.onclick = () => {
 function openGallery() {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Galería de Recuerdos';
-  selectFilesBtn.style.display = 'none';
-  messageInput.style.display = 'none';
-  submitUpload.style.display = 'none';
-  galleryGrid.style.display = 'block';
-  qrSection.style.display = 'block';
+  document.querySelector('#galleryGrid').style.display = 'grid';
+  document.querySelector('#qrSection').style.display = 'block';
   loadGallery();
 }
 
@@ -188,9 +180,9 @@ generateQr.onclick = () => {
   qrContainer.style.display = 'block';
   new QRCode(document.getElementById('qrcode'), {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
-    width: 240,
-    height: 240,
-    colorDark: '#000000',
+    width: 200,
+    height: 200,
+    colorDark: '#d4a373',
     colorLight: '#ffffff'
   });
   generateQr.style.display = 'none';
