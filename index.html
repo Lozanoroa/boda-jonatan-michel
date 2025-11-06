@@ -51,29 +51,29 @@
     </div>
   </div>
 
-  <!-- Modal SUBIDA PÚBLICA -->
+  <!-- Modal SUBIDA PÚBLICA (solo desde botón) -->
   <div id="galleryModal" class="modal">
     <div class="modal-content">
       <span class="close">X</span>
-      <h2>Sube tus recuerdos de nuestra boda</h2>
+      <h2 id="modalTitle">Sube tus recuerdos de nuestra boda</h2>
 
-      <!-- Formulario de subida (PÚBLICO) -->
-      <form id="uploadForm" class="upload-form">
+      <!-- Formulario de subida (solo en modo público) -->
+      <form id="uploadForm" class="upload-form" style="display:none;">
         <input type="file" id="mediaFile" accept="image/*,video/*" multiple required />
         <textarea id="messageInput" placeholder="Mensaje opcional (máx. 100 palabras)" maxlength="600"></textarea>
         <button type="submit">Subir Recuerdo</button>
       </form>
 
-      <!-- QR ÚNICO (solo con contraseña) -->
-      <div class="qr-section" id="qrSection" style="display:none;">
+      <!-- QR ÚNICO (solo en modo autenticado) -->
+      <div class="qr-section" id="qrSection" style="display:none; text-align:center; margin:20px 0;">
         <button id="generateQr">Generar QR para Invitados</button>
-        <div id="qrContainer" style="display:none; text-align:center; margin:20px 0;">
+        <div id="qrContainer" style="display:none; margin:20px 0;">
           <div id="qrcode"></div><br>
           <button id="downloadQr">Descargar QR</button>
         </div>
       </div>
 
-      <!-- Galería (solo con contraseña) -->
+      <!-- Galería (solo en modo autenticado) -->
       <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
     </div>
   </div>
