@@ -23,7 +23,6 @@ const uploadBtn = document.getElementById('uploadBtn');
 const galleryModal = document.getElementById('galleryModal');
 const passwordModal = document.getElementById('passwordModal');
 const closeBtns = document.querySelectorAll('.close');
-const backBtn = document.querySelector('.back-btn');
 const uploadForm = document.getElementById('uploadForm');
 const galleryGrid = document.getElementById('galleryGrid');
 const qrSection = document.getElementById('qrSection');
@@ -55,25 +54,12 @@ function requireAuth() {
 
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
-    openGallery();
+    galleryModal.style.display = 'block';
+    uploadForm.style.display = 'block';
+    galleryGrid.style.display = 'block';
+    qrSection.style.display = 'block';
+    loadGallery();
   }
-});
-
-// === ABRIR GALERÍA ===
-function openGallery() {
-  galleryModal.style.display = 'block';
-  uploadForm.style.display = 'block';
-  galleryGrid.style.display = 'grid';
-  qrSection.style.display = 'block';
-  loadGallery();
-}
-
-// === BOTÓN VOLVER ===
-backBtn.addEventListener('click', () => {
-  galleryModal.style.display = 'none';
-  qrContainer.style.display = 'none';
-  generateQr.style.display = 'block';
-  qrGenerated = false;
 });
 
 // === CONTRASEÑA ===
@@ -82,7 +68,11 @@ enterAdmin.addEventListener('click', () => {
   if (pwd === 'Jonatanymichel') {
     isAuthenticated = true;
     passwordModal.style.display = 'none';
-    openGallery();
+    galleryModal.style.display = 'block';
+    uploadForm.style.display = 'block';
+    galleryGrid.style.display = 'block';
+    qrSection.style.display = 'block';
+    loadGallery();
     adminPassword.value = '';
   } else {
     alert('Contraseña incorrecta');
@@ -102,13 +92,11 @@ window.addEventListener('click', (e) => {
   if (e.target === galleryModal) {
     galleryModal.style.display = 'none';
     qrContainer.style.display = 'none';
-    generateQr.style.display = 'block';
-    qrGenerated = false;
   }
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === GENERAR QR ===
+// === GENERAR QR ÚNICO ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
 
@@ -118,9 +106,9 @@ generateQr.addEventListener('click', () => {
   const url = 'https://lozanoroa.github.io/boda-jonatan-michel/';
 
   new QRCode(qrDiv, {
-    text: url,
-    width: 220,
-    height: 220,
+     text: url,
+    width: 240,
+    height: 240,
     colorDark: '#9f5b4c',
     colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.H
@@ -143,7 +131,7 @@ downloadQr.addEventListener('click', () => {
   link.click();
 });
 
-// === SUBIR ARCHIVO ===
+// === SUBIR ARCHIVO (PÚBLICO) ===
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const files = document.getElementById('mediaFile').files;
@@ -174,7 +162,7 @@ uploadForm.addEventListener('submit', async (e) => {
   }
 });
 
-// === CARGAR GALERÍA ===
+// === CARGAR GALERÍA (solo con contraseña) ===
 async function loadGallery() {
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
   try {
