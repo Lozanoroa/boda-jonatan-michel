@@ -24,6 +24,7 @@ const modalTitle = document.getElementById('modalTitle');
 const previewModal = document.getElementById('previewModal');
 const previewMedia = document.getElementById('previewMedia');
 const downloadMedia = document.getElementById('downloadMedia');
+const uploadSection = document.getElementById('uploadSection');
 
 let isAuth = false;
 let currentUrl = '';
@@ -31,14 +32,14 @@ let qrGenerated = false;
 
 // === CARGAR GALERÍA ===
 async function loadGallery() {
-  galleryGrid.innerHTML = '<p style="text-align:center;padding:20px;color:#8d6e63;">Cargando recuerdos...</p>';
+  galleryGrid.innerHTML = '<p style="text-align:center;padding:20px;color:#000;">Cargando recuerdos...</p>';
   try {
     const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
     if (!res.ok) throw new Error();
     const data = await res.json();
     galleryGrid.innerHTML = '';
     if (!Array.isArray(data) || data.length === 0) {
-      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;color:#8d6e63;">Aún no hay recuerdos. ¡Sé el primero en compartir!</p>';
+      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;color:#000;">Aún no hay recuerdos. ¡Sé el primero en compartir!</p>';
     }
 
     data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -119,8 +120,9 @@ submitUpload.onclick = async () => {
 uploadBtn.onclick = () => {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Sube tus recuerdos';
-  document.querySelector('#galleryGrid').style.display = 'none';
-  document.querySelector('#qrSection').style.display = 'none';
+  uploadSection.style.display = 'block';
+  galleryGrid.style.display = 'none';
+  qrSection.style.display = 'none';
   setTimeout(() => mediaFile.click(), 300);
 };
 
@@ -145,8 +147,9 @@ enterAdmin.onclick = () => {
 function openGallery() {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Galería de Recuerdos';
-  document.querySelector('#galleryGrid').style.display = 'grid';
-  document.querySelector('#qrSection').style.display = 'block';
+  uploadSection.style.display = 'none';  // OCULTA SUBIR
+  galleryGrid.style.display = 'grid';
+  qrSection.style.display = 'block';
   loadGallery();
 }
 
@@ -174,7 +177,7 @@ downloadMedia.onclick = () => {
   }
 };
 
-// QR
+// QR EN NEGRO
 generateQr.onclick = () => {
   if (qrGenerated) return;
   qrContainer.style.display = 'block';
@@ -182,7 +185,7 @@ generateQr.onclick = () => {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
     width: 200,
     height: 200,
-    colorDark: '#d4a373',
+    colorDark: '#000000',  // NEGRO
     colorLight: '#ffffff'
   });
   generateQr.style.display = 'none';
