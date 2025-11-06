@@ -12,12 +12,23 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Merge JSON
+      - name: Instalar jq
+        run: sudo apt-get install -y jq
+
+      - name: Actualizar JSON
         run: |
-          jq -s 'reduce .[] as $item (.; . + $item)' data/recuerdos.json <(echo '${{ toJson(github.event.client_payload.data) }}') > temp.json
-          mv temp.json data/recuerdos.json
+          INPUT='data/recuerdos.json'
+          PAYLOAD='${{ toJson(github.event.client_payload.data) }}'
+          
+          if [ ! -f "$INPUT" ]; then
+            echo "[]" > "$INPUT"
+          fi
+          
+          jq -s 'reduce .[] as $item (.; . + $item)' "$INPUT" <(echo "$PAYLOAD") > temp.json
+          mv temp.json "$INPUT"
 
       - name: Commit y Push
         run: |
