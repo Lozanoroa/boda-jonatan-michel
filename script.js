@@ -20,7 +20,7 @@ const enterAdmin = document.getElementById('enterAdmin');
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === ABRIR MODAL PÚBLICO ===
+// === ABRIR MODAL PÚBLICO (SUBIR) ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
   uploadForm.style.display = 'block';
@@ -38,21 +38,22 @@ function requireAuth() {
   return true;
 }
 
-openGalleryBtn.addEventListener('click', () => {
-  if (requireAuth()) {
-    openAdminView();
-  }
-});
-
-// === FUNCIÓN PARA VISTA ADMIN ===
-function openAdminView() {
+// === ABRIR VISTA COMPLETA (para todos con contraseña) ===
+function openAuthenticatedView() {
   galleryModal.style.display = 'block';
   uploadForm.style.display = 'block';
-  galleryGrid.style.display = 'block';
-  qrSection.style.display = 'block';
+  galleryGrid.style.display = 'block';   // ← TODOS VEN LA GALERÍA
+  qrSection.style.display = 'block';     // ← TODOS VEN EL BOTÓN QR
   qrContainer.style.display = 'none';
-  loadGallery();
+  loadGallery(); // ← Carga galería con todo
 }
+
+// === ABRIR DESDE FOTO DE PAREJA ===
+openGalleryBtn.addEventListener('click', () => {
+  if (requireAuth()) {
+    openAuthenticatedView();
+  }
+});
 
 // === INGRESAR CON CONTRASEÑA ===
 enterAdmin.addEventListener('click', () => {
@@ -60,7 +61,7 @@ enterAdmin.addEventListener('click', () => {
   if (pwd === 'Jonatanymichel') {
     isAuthenticated = true;
     passwordModal.style.display = 'none';
-    openAdminView();
+    openAuthenticatedView();
     adminPassword.value = '';
   } else {
     alert('Contraseña incorrecta');
@@ -107,12 +108,12 @@ uploadForm.addEventListener('submit', async (e) => {
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const res = await fetch(
+      const theResponse = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
         { method: 'POST', body: formData }
       );
 
-      const data = await res.json();
+      const data = await theResponse.json();
       if (!data.secure_url) throw new Error('Error en Cloudinary');
 
       const url = data.secure_url;
@@ -131,7 +132,7 @@ uploadForm.addEventListener('submit', async (e) => {
         headers: { 'Accept': 'application/json' }
       }).catch(() => {});
 
-      // Guardar en localStorage
+      // Guardar en localStorage (para que todos con contraseña vean)
       const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
       recuerdos.push({ url, type, message, timestamp: new Date() });
       localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
@@ -148,7 +149,7 @@ uploadForm.addEventListener('submit', async (e) => {
   if (results.length > 0) {
     alert(`${results.length} recuerdo(s) subido(s) con éxito!`);
     uploadForm.reset();
-    if (isAuthenticated) loadGallery();
+    if (isAuthenticated) loadGallery(); // ← Recarga si está autenticado
   } else {
     alert('Error al subir. Intenta con menos archivos.');
   }
@@ -157,7 +158,7 @@ uploadForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Subir Recuerdo';
 });
 
-// === CARGAR GALERÍA DESDE LOCALSTORAGE ===
+// === CARGAR GALERÍA DESDE LOCALSTORAGE (todos con contraseña) ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
@@ -188,7 +189,7 @@ function loadGallery() {
   }, 300);
 }
 
-// === GENERAR QR (100% FUNCIONAL) ===
+// === GENERAR QR EN NEGRO ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   
@@ -205,8 +206,8 @@ generateQr.addEventListener('click', () => {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
     width: 240,
     height: 240,
-    colorDark: '#9f5b4c',
-    colorLight: '#ffffff',
+    colorDark: '#000000',  // ← NEGRO
+    colorLight: '#ffffff', // ← BLANCO
     correctLevel: QRCode.CorrectLevel.H
   });
   
