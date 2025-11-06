@@ -16,16 +16,18 @@ const qrContainer = document.getElementById('qrContainer');
 const downloadQr = document.getElementById('downloadQr');
 const adminPassword = document.getElementById('adminPassword');
 const enterAdmin = document.getElementById('enterAdmin');
+const modalTitle = document.getElementById('modalTitle');
 
 let isAuthenticated = false;
 let qrGenerated = false;
 
-// === ABRIR MODAL PÚBLICO: SOLO SUBIDA (botón "Subir recuerdo") ===
+// === ABRIR MODAL PÚBLICO: SOLO SUBIDA ===
 uploadBtn.addEventListener('click', () => {
   galleryModal.style.display = 'block';
+  modalTitle.textContent = 'Sube tus recuerdos de nuestra boda';
   uploadForm.style.display = 'block';
-  galleryGrid.style.display = 'none';   // ← NO SE VE
-  qrSection.style.display = 'none';    // ← NO SE VE
+  galleryGrid.style.display = 'none';
+  qrSection.style.display = 'none';
   qrContainer.style.display = 'none';
 });
 
@@ -38,12 +40,13 @@ function requireAuth() {
   return true;
 }
 
-// === ABRIR VISTA COMPLETA SOLO CON CONTRASEÑA ===
-function openAuthenticatedView() {
+// === ABRIR VISTA RESTRINGIDA (solo galería + QR) ===
+function openRestrictedView() {
   galleryModal.style.display = 'block';
-  uploadForm.style.display = 'block';
-  galleryGrid.style.display = 'block';   // ← VISIBLE
-  qrSection.style.display = 'block';     // ← VISIBLE
+  modalTitle.textContent = 'Galería de Recuerdos';
+  uploadForm.style.display = 'none';     // ← NO SUBIDA
+  galleryGrid.style.display = 'block';   // ← GALERÍA
+  qrSection.style.display = 'block';     // ← QR
   qrContainer.style.display = 'none';
   loadGallery();
 }
@@ -51,7 +54,7 @@ function openAuthenticatedView() {
 // === ABRIR DESDE FOTO DE PAREJA (requiere contraseña) ===
 openGalleryBtn.addEventListener('click', () => {
   if (requireAuth()) {
-    openAuthenticatedView();
+    openRestrictedView();
   }
 });
 
@@ -61,7 +64,7 @@ enterAdmin.addEventListener('click', () => {
   if (pwd === 'Jonatanymichel') {
     isAuthenticated = true;
     passwordModal.style.display = 'none';
-    openAuthenticatedView();
+    openRestrictedView();
     adminPassword.value = '';
   } else {
     alert('Contraseña incorrecta');
@@ -86,7 +89,7 @@ window.addEventListener('click', (e) => {
   if (e.target === passwordModal) passwordModal.style.display = 'none';
 });
 
-// === SUBIR ARCHIVOS (PÚBLICO, desde botón "Subir recuerdo") ===
+// === SUBIR ARCHIVOS (solo desde botón público) ===
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -149,7 +152,6 @@ uploadForm.addEventListener('submit', async (e) => {
   if (results.length > 0) {
     alert(`${results.length} recuerdo(s) subido(s) con éxito!`);
     uploadForm.reset();
-    if (isAuthenticated) loadGallery(); // ← Solo recarga si ya está autenticado
   } else {
     alert('Error al subir. Intenta con menos archivos.');
   }
@@ -158,7 +160,7 @@ uploadForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Subir Recuerdo';
 });
 
-// === CARGAR GALERÍA (solo con contraseña) ===
+// === CARGAR GALERÍA CON BOTÓN ELIMINAR ===
 function loadGallery() {
   const recuerdos = JSON.parse(localStorage.getItem('recuerdos_boda') || '[]');
   galleryGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando...</p>';
@@ -170,26 +172,48 @@ function loadGallery() {
       return;
     }
 
-    recuerdos.forEach(r => {
+    recuerdos.forEach((r, index) => {
       const item = document.createElement('div');
       item.className = 'gallery-item';
+      item.style.position = 'relative';
+
       if (r.type === 'image') {
-        item.innerHTML = `<img src="${r.url}" loading="lazy" alt="Recuerdo"><p>${r.message || ''}</p>`;
+        item.innerHTML = `
+          <img src="${r.url}" loading="lazy" alt="Recuerdo">
+          <p>${r.message || ''}</p>
+          <button class="delete-btn" data-index="${index}" style="position:absolute;top:8px;right:8px;background:red;color:white;border:none;padding:5px 8px;border-radius:50%;font-weight:bold;cursor:pointer;">X</button>
+        `;
       } else {
         item.innerHTML = `
           <video controls preload="metadata" style="width:100%;height:170px;object-fit:cover;border-radius:12px;">
             <source src="${r.url}#t=0.1" type="video/mp4">
-            Tu navegador no soporta video.
           </video>
           <p>${r.message || ''}</p>
+          <button class="delete-btn" data-index="${index}" style="position:absolute;top:8px;right:8px;background:red;color:white;border:none;padding:5px 8px;border-radius:50%;font-weight:bold;cursor:pointer;">X</button>
         `;
       }
       galleryGrid.appendChild(item);
     });
+
+    // === EVENTO ELIMINAR (solo con contraseña) ===
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!isAuthenticated) {
+          alert('No tienes permiso para eliminar.');
+          return;
+        }
+        const index = btn.getAttribute('data-index');
+        if (confirm('¿Eliminar este recuerdo?')) {
+          recuerdos.splice(index, 1);
+          localStorage.setItem('recuerdos_boda', JSON.stringify(recuerdos));
+          loadGallery();
+        }
+      });
+    });
   }, 300);
 }
 
-// === GENERAR QR EN NEGRO (solo con contraseña) ===
+// === GENERAR QR EN NEGRO ===
 generateQr.addEventListener('click', () => {
   if (qrGenerated) return;
   
@@ -206,8 +230,8 @@ generateQr.addEventListener('click', () => {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
     width: 240,
     height: 240,
-    colorDark: '#000000',   // ← NEGRO
-    colorLight: '#ffffff',  // ← BLANCO
+    colorDark: '#000000',
+    colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.H
   });
   
