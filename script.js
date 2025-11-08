@@ -35,12 +35,13 @@ async function loadGallery() {
   galleryGrid.innerHTML = '<p style="padding:20px;">Cargando...</p>';
   try {
     const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error('No se pudo cargar el JSON');
     const data = await res.json();
     currentItems = Array.isArray(data) ? data : [];
     renderGallery();
-  } catch {
-    galleryGrid.innerHTML = '<p style="color:red;">Error. Recarga.</p>';
+  } catch (error) {
+    console.error(error);
+    galleryGrid.innerHTML = '<p style="color:red;">Error de conexión. Intenta de nuevo.</p>';
   }
 }
 
@@ -67,8 +68,8 @@ function renderGallery() {
     item.innerHTML = `
       ${mediaHTML}
       <div class="actions">
-        <button onclick="downloadItem('${d.url}')">↓</button>
-        <button onclick="deleteItem(${index})">×</button>
+        <button onclick="downloadItem('${d.url}')">Download</button>
+        <button onclick="deleteItem(${index})">Delete</button>
       </div>
       <p>${d.message || ''}</p>
     `;
@@ -91,11 +92,11 @@ async function deleteItem(index) {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ delete: true, items: currentItems })
+      body: JSON.stringify(currentItems)
     });
     renderGallery();
   } catch {
-    alert('Error al eliminar. Intenta de nuevo.');
+    alert('Error al eliminar.');
   }
 }
 
@@ -108,7 +109,7 @@ function openPreview(url, type) {
     : `<video controls style="max-width:100%;max-height:70vh;border-radius:15px;"><source src="${url}"></video>`;
 }
 
-// === SUBIR ===
+// === SUBIR (CORREGIDO) ===
 submitUpload.onclick = async () => {
   const files = mediaFile.files;
   const msg = messageInput.value.trim().slice(0, 50);
@@ -117,52 +118,67 @@ submitUpload.onclick = async () => {
   submitUpload.disabled = true;
   submitUpload.textContent = 'Subiendo...';
 
-  const items = [];
+  const uploadedItems = [];
+
   for (const file of files) {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('upload_preset', CLOUDINARY_PRESET);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/auto/upload`, { method: 'POST', body: fd });
-      const data = await res.json();
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/auto/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
       if (data.secure_url) {
-        items.push({
+        uploadedItems.push({
           url: data.secure_url,
           type: file.type.startsWith('image/') ? 'image' : 'video',
           message: msg,
           timestamp: new Date().toISOString()
         });
+      } else {
+        console.error('Error Cloudinary:', data);
+        alert(`Error al subir ${file.name}`);
       }
-    } catch (e) { console.error(e); }
+    } catch (error) {
+      console.error('Error de red:', error);
+      alert(`Error de conexión al subir ${file.name}`);
+    }
   }
 
-  if (items.length > 0) {
+  if (uploadedItems.length > 0) {
     try {
-      const r = await fetch(WEBHOOK_URL, {
+      const syncResponse = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(items)
+        body: JSON.stringify(uploadedItems)
       });
-      if (r.ok) {
-        alert(`${items.length} subido(s)!`);
-        setTimeout(loadGallery, 5000);
+
+      if (syncResponse.ok) {
+        alert(`${uploadedItems.length} recuerdo(s) subido(s) con éxito!`);
+        setTimeout(loadGallery, 3000);
         uploadModal.style.display = 'none';
+      } else {
+        throw new Error('Sync failed');
       }
     } catch {
-      alert('Subido, pero no sincronizado.');
+      alert('Subido a Cloudinary, pero no sincronizado con GitHub. Intenta de nuevo.');
     }
-  } else {
-    alert('Error al subir.');
   }
 
-  mediaFile.value = ''; messageInput.value = ''; submitUpload.disabled = false; submitUpload.textContent = 'Subir Recuerdo';
+  // Reset
+  mediaFile.value = '';
+  messageInput.value = '';
+  submitUpload.disabled = false;
+  submitUpload.textContent = 'Subir Recuerdo';
 };
 
 // === MODALES ===
-uploadBtn.onclick = () => {
-  uploadModal.style.display = 'block';
-};
-
+uploadBtn.onclick = () => uploadModal.style.display = 'block';
 selectFilesBtn.onclick = () => mediaFile.click();
 
 openGalleryBtn.onclick = () => {
@@ -186,7 +202,7 @@ function openGallery() {
   loadGallery();
 }
 
-// Cerrar
+// Cerrar modales
 document.querySelectorAll('.close, .close-preview, .close-upload').forEach(btn => {
   btn.onclick = () => {
     galleryModal.style.display = 'none';
@@ -229,7 +245,7 @@ downloadQr.onclick = () => {
   const canvas = document.querySelector('#qrcode canvas');
   if (canvas) {
     const a = document.createElement('a');
-    a.download = 'QR-Boda.png';
+    a.download = 'QR-Boda-Jonatan-Michel.png';
     a.href = canvas.toDataURL();
     a.click();
   }
