@@ -46,27 +46,19 @@
   <div id="galleryModal" class="modal">
     <div class="modal-content">
       <span class="close">X</span>
-      <h2 id="modalTitle">Galería de Recuerdos</h2>
-
-      <!-- SECCIÓN SUBIR (OCULTA AL ENTRAR POR FOTO) -->
-      <div id="uploadSection">
-        <input type="file" id="mediaFile" accept="image/*,video/*" multiple style="display:none;" />
-        <button id="selectFilesBtn" class="select-btn">Seleccionar fotos o videos</button>
-        <textarea id="messageInput" placeholder="Escribe un mensaje (opcional)" maxlength="600" class="message-textarea"></textarea>
-        <button id="submitUpload" class="submit-btn">Subir Recuerdo</button>
-      </div>
-
-      <!-- QR -->
-      <div class="qr-section" id="qrSection">
+      <h2 id="modalTitle">Sube tus recuerdos</h2>
+      <input type="file" id="mediaFile" accept="image/*,video/*" multiple style="display:none;" />
+      <button id="selectFilesBtn" class="select-btn">Seleccionar fotos o videos</button>
+      <textarea id="messageInput" placeholder="Escribe un mensaje (opcional)" maxlength="600" class="message-textarea"></textarea>
+      <button id="submitUpload" class="submit-btn">Subir Recuerdo</button>
+      <div class="qr-section" id="qrSection" style="display:none;">
         <button id="generateQr">Generar QR para Invitados</button>
         <div id="qrContainer" style="display:none; margin:20px 0;">
           <div id="qrcode"></div><br>
           <button id="downloadQr">Descargar QR</button>
         </div>
       </div>
-
-      <!-- GALERÍA -->
-      <div id="galleryGrid" class="gallery-grid"></div>
+      <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
     </div>
   </div>
 
