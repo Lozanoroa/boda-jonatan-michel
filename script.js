@@ -2,9 +2,7 @@
 const CLOUDINARY_NAME = 'dnhrk78ul';
 const CLOUDINARY_PRESET = 'boda2025';
 const JSON_URL = 'https://raw.githubusercontent.com/lozanoroa/boda-jonatan-michel/main/data/recuerdos.json';
-
-// === NUEVA URL DE PIPEDREAM CON TOKEN (CREA ESTA EN PASO 1) ===
-const PIPEDREAM_WEBHOOK = 'https://eo7qq78xmdl6iww.m.pipedream.net'; // ← CAMBIA ESTO
+const PIPEDREAM_WEBHOOK = 'https://eo7qq78xmdl6iww.m.pipedream.net'; // ← TU URL
 
 // === ELEMENTOS ===
 const uploadBtn = document.getElementById('uploadBtn');
@@ -91,7 +89,7 @@ async function deleteItem(index) {
   renderGallery();
 }
 
-// === GUARDAR EN GITHUB (NUEVO) ===
+// === GUARDAR EN GITHUB ===
 async function saveToGitHub(data) {
   try {
     await fetch(PIPEDREAM_WEBHOOK, {
@@ -113,7 +111,7 @@ function openPreview(url, type) {
     : `<video controls style="max-width:100%;max-height:70vh;border-radius:15px;"><source src="${url}"></video>`;
 }
 
-// === SUBIR (AHORA GUARDA TODO) ===
+// === SUBIR ===
 submitUpload.onclick = async () => {
   const files = mediaFile.files;
   const msg = messageInput.value.trim().slice(0, 50);
@@ -124,7 +122,6 @@ submitUpload.onclick = async () => {
 
   const uploadedItems = [];
 
-  // 1. SUBIR A CLOUDINARY
   for (const file of files) {
     const formData = new FormData();
     formData.append('file', file);
@@ -151,7 +148,6 @@ submitUpload.onclick = async () => {
   }
 
   if (uploadedItems.length > 0) {
-    // 2. OBTENER JSON ACTUAL
     let currentData = [];
     try {
       const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
@@ -162,7 +158,6 @@ submitUpload.onclick = async () => {
       }
     } catch {}
 
-    // 3. COMBINAR Y GUARDAR
     const finalData = [...currentData, ...uploadedItems];
     await saveToGitHub(finalData);
 
@@ -184,15 +179,19 @@ uploadBtn.onclick = () => uploadModal.style.display = 'block';
 selectFilesBtn.onclick = () => mediaFile.click();
 
 openGalleryBtn.onclick = () => {
-  if (isAuth) openGallery();
-  else passwordModal.style.display = 'block';
+  if (isAuth) {
+    openGallery();
+  } else {
+    passwordModal.style.display = 'block';
+  }
 };
 
+// === AUTENTICACIÓN CORREGIDA: CARGA LA GALERÍA AL ENTRAR ===
 enterAdmin.onclick = () => {
   if (adminPassword.value.trim() === 'Jonatanymichel') {
     isAuth = true;
     passwordModal.style.display = 'none';
-    openGallery();
+    openGallery(); // ← AHORA SÍ CARGA LAS FOTOS
   } else {
     alert('Contraseña incorrecta');
   }
@@ -201,7 +200,7 @@ enterAdmin.onclick = () => {
 
 function openGallery() {
   galleryModal.style.display = 'block';
-  loadGallery();
+  loadGallery(); // ← SE EJECUTA AQUÍ
 }
 
 // Cerrar modales
