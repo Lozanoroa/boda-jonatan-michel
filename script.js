@@ -2,7 +2,7 @@
 const CLOUDINARY_NAME = 'dnhrk78ul';
 const CLOUDINARY_PRESET = 'boda2025';
 const JSON_URL = 'https://raw.githubusercontent.com/lozanoroa/boda-jonatan-michel/main/data/recuerdos.json';
-const WEBHOOK_URL = 'https://eokyeowbog4qiei.m.pipedream.net';
+const WEBHOOK_URL = 'https://eo7qq78xmdl6iww.m.pipedream.net';
 
 // === ELEMENTOS ===
 const uploadBtn = document.getElementById('uploadBtn');
@@ -250,3 +250,4 @@ downloadQr.onclick = () => {
     a.click();
   }
 };
+
