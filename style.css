@@ -142,6 +142,41 @@ body {
   color: #333333;
 }
 
+/* INPUT CONTRASEÑA */
+#adminPassword {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 16px;
+  margin: 15px auto;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  font-size: 1rem;
+  text-align: center;
+  font-family: inherit;
+  display: block;
+}
+
+/* BOTÓN ENTRAR – IGUAL QUE "SUBIR RECUERDO" */
+#enterAdmin {
+  background: #9f5b4c;
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  cursor: pointer;
+  margin: 20px auto 0;
+  box-shadow: 0 5px 15px rgba(159, 91, 76, 0.4);
+  transition: all 0.3s;
+  display: block;
+  width: fit-content;
+}
+#enterAdmin:hover {
+  background: #8b4d3e;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(159, 91, 76, 0.5);
+}
+
 /* BOTONES DENTRO DE MODALES */
 .select-btn,
 .submit-btn,
@@ -313,8 +348,13 @@ body {
   .submit-btn,
   .download-btn,
   #generateQr,
-  #downloadQr {
+  #downloadQr,
+  #enterAdmin {
     padding: 12px 24px;
     font-size: 1rem;
+  }
+  #adminPassword {
+    max-width: 260px;
+    font-size: 0.95rem;
   }
 }
