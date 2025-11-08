@@ -8,6 +8,7 @@ const WEBHOOK_URL = 'https://eokyeowbog4qiei.m.pipedream.net';
 const uploadBtn = document.getElementById('uploadBtn');
 const openGalleryBtn = document.getElementById('openGalleryBtn');
 const galleryModal = document.getElementById('galleryModal');
+const uploadModal = document.getElementById('uploadModal');
 const passwordModal = document.getElementById('passwordModal');
 const mediaFile = document.getElementById('mediaFile');
 const selectFilesBtn = document.getElementById('selectFilesBtn');
@@ -20,41 +21,81 @@ const qrContainer = document.getElementById('qrContainer');
 const downloadQr = document.getElementById('downloadQr');
 const adminPassword = document.getElementById('adminPassword');
 const enterAdmin = document.getElementById('enterAdmin');
-const modalTitle = document.getElementById('modalTitle');
 const previewModal = document.getElementById('previewModal');
 const previewMedia = document.getElementById('previewMedia');
 const downloadMedia = document.getElementById('downloadMedia');
-const uploadSection = document.getElementById('uploadSection');
 
 let isAuth = false;
 let currentUrl = '';
 let qrGenerated = false;
+let currentItems = [];
 
 // === CARGAR GALERÍA ===
 async function loadGallery() {
-  galleryGrid.innerHTML = '<p style="text-align:center;padding:20px;">Cargando recuerdos...</p>';
+  galleryGrid.innerHTML = '<p style="padding:20px;">Cargando...</p>';
   try {
     const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
     if (!res.ok) throw new Error();
     const data = await res.json();
-    galleryGrid.innerHTML = '';
-    if (!Array.isArray(data) || data.length === 0) {
-      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;">Aún no hay recuerdos. ¡Sé el primero en compartir!</p>';
-    }
-
-    data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    data.forEach(d => {
-      const item = document.createElement('div');
-      item.className = 'gallery-item';
-      item.onclick = () => openPreview(d.url, d.type);
-      const mediaHTML = d.type === 'image'
-        ? `<img src="${d.url}" loading="lazy">`
-        : `<video controls><source src="${d.url}#t=0.1"></video>`;
-      item.innerHTML = mediaHTML + `<p>${d.message || ''}</p>`;
-      galleryGrid.appendChild(item);
-    });
+    currentItems = Array.isArray(data) ? data : [];
+    renderGallery();
   } catch {
-    galleryGrid.innerHTML = '<p style="text-align:center;color:red;">Error de conexión. Intenta de nuevo.</p>';
+    galleryGrid.innerHTML = '<p style="color:red;">Error. Recarga.</p>';
+  }
+}
+
+function renderGallery() {
+  galleryGrid.innerHTML = '';
+  if (currentItems.length === 0) {
+    galleryGrid.innerHTML = '<p style="font-style:italic;">Sin recuerdos aún</p>';
+    return;
+  }
+
+  currentItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  currentItems.forEach((d, index) => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.onclick = (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      openPreview(d.url, d.type);
+    };
+
+    const mediaHTML = d.type === 'image'
+      ? `<img src="${d.url}" loading="lazy">`
+      : `<video controls><source src="${d.url}#t=0.1"></video>`;
+
+    item.innerHTML = `
+      ${mediaHTML}
+      <div class="actions">
+        <button onclick="downloadItem('${d.url}')">↓</button>
+        <button onclick="deleteItem(${index})">×</button>
+      </div>
+      <p>${d.message || ''}</p>
+    `;
+    galleryGrid.appendChild(item);
+  });
+}
+
+// === DESCARGAR / ELIMINAR ===
+function downloadItem(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  a.click();
+}
+
+async function deleteItem(index) {
+  if (!confirm('¿Eliminar este recuerdo?')) return;
+  currentItems.splice(index, 1);
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delete: true, items: currentItems })
+    });
+    renderGallery();
+  } catch {
+    alert('Error al eliminar. Intenta de nuevo.');
   }
 }
 
@@ -70,7 +111,7 @@ function openPreview(url, type) {
 // === SUBIR ===
 submitUpload.onclick = async () => {
   const files = mediaFile.files;
-  const msg = messageInput.value.trim();
+  const msg = messageInput.value.trim().slice(0, 50);
   if (!files.length) return alert('Selecciona al menos un archivo');
 
   submitUpload.disabled = true;
@@ -103,14 +144,15 @@ submitUpload.onclick = async () => {
         body: JSON.stringify(items)
       });
       if (r.ok) {
-        alert(`${items.length} recuerdo(s) subido(s) y sincronizado(s)!`);
+        alert(`${items.length} subido(s)!`);
         setTimeout(loadGallery, 5000);
-      } else throw new Error();
+        uploadModal.style.display = 'none';
+      }
     } catch {
-      alert('Subido a Cloudinary, pero no sincronizado. Intenta de nuevo.');
+      alert('Subido, pero no sincronizado.');
     }
   } else {
-    alert('Error al subir a Cloudinary');
+    alert('Error al subir.');
   }
 
   mediaFile.value = ''; messageInput.value = ''; submitUpload.disabled = false; submitUpload.textContent = 'Subir Recuerdo';
@@ -118,12 +160,7 @@ submitUpload.onclick = async () => {
 
 // === MODALES ===
 uploadBtn.onclick = () => {
-  galleryModal.style.display = 'block';
-  modalTitle.textContent = 'Sube tus recuerdos';
-  uploadSection.style.display = 'block';
-  galleryGrid.style.display = 'none';
-  qrSection.style.display = 'none';
-  setTimeout(() => mediaFile.click(), 300);
+  uploadModal.style.display = 'block';
 };
 
 selectFilesBtn.onclick = () => mediaFile.click();
@@ -146,18 +183,15 @@ enterAdmin.onclick = () => {
 
 function openGallery() {
   galleryModal.style.display = 'block';
-  modalTitle.textContent = 'Galería de Recuerdos';
-  uploadSection.style.display = 'none';
-  galleryGrid.style.display = 'grid';
-  qrSection.style.display = 'block';
   loadGallery();
 }
 
-// Cerrar modales
-document.querySelectorAll('.close, .close-preview').forEach(btn => {
+// Cerrar
+document.querySelectorAll('.close, .close-preview, .close-upload').forEach(btn => {
   btn.onclick = () => {
     galleryModal.style.display = 'none';
     passwordModal.style.display = 'none';
+    uploadModal.style.display = 'none';
     previewModal.style.display = 'none';
     qrContainer.style.display = 'none';
   };
@@ -167,7 +201,6 @@ window.onclick = e => {
   if (e.target.classList.contains('modal')) e.target.style.display = 'none';
 };
 
-// Descargar
 downloadMedia.onclick = () => {
   if (currentUrl) {
     const a = document.createElement('a');
@@ -177,7 +210,7 @@ downloadMedia.onclick = () => {
   }
 };
 
-// QR NEGRO
+// QR
 generateQr.onclick = () => {
   if (qrGenerated) return;
   qrContainer.style.display = 'block';
@@ -196,7 +229,7 @@ downloadQr.onclick = () => {
   const canvas = document.querySelector('#qrcode canvas');
   if (canvas) {
     const a = document.createElement('a');
-    a.download = 'QR-Boda-Jonatan-Michel.png';
+    a.download = 'QR-Boda.png';
     a.href = canvas.toDataURL();
     a.click();
   }
