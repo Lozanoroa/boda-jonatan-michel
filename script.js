@@ -32,14 +32,14 @@ let qrGenerated = false;
 
 // === CARGAR GALERÍA ===
 async function loadGallery() {
-  galleryGrid.innerHTML = '<p style="text-align:center;padding:20px;color:#000;">Cargando recuerdos...</p>';
+  galleryGrid.innerHTML = '<p style="text-align:center;padding:20px;">Cargando recuerdos...</p>';
   try {
     const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
     if (!res.ok) throw new Error();
     const data = await res.json();
     galleryGrid.innerHTML = '';
     if (!Array.isArray(data) || data.length === 0) {
-      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;color:#000;">Aún no hay recuerdos. ¡Sé el primero en compartir!</p>';
+      return galleryGrid.innerHTML = '<p style="text-align:center;font-style:italic;">Aún no hay recuerdos. ¡Sé el primero en compartir!</p>';
     }
 
     data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -103,7 +103,7 @@ submitUpload.onclick = async () => {
         body: JSON.stringify(items)
       });
       if (r.ok) {
-        alert(`¡${items.length} recuerdo(s) subido(s) y sincronizado(s)!`);
+        alert(`${items.length} recuerdo(s) subido(s) y sincronizado(s)!`);
         setTimeout(loadGallery, 5000);
       } else throw new Error();
     } catch {
@@ -147,7 +147,7 @@ enterAdmin.onclick = () => {
 function openGallery() {
   galleryModal.style.display = 'block';
   modalTitle.textContent = 'Galería de Recuerdos';
-  uploadSection.style.display = 'none';  // OCULTA SUBIR
+  uploadSection.style.display = 'none';
   galleryGrid.style.display = 'grid';
   qrSection.style.display = 'block';
   loadGallery();
@@ -177,7 +177,7 @@ downloadMedia.onclick = () => {
   }
 };
 
-// QR EN NEGRO
+// QR NEGRO
 generateQr.onclick = () => {
   if (qrGenerated) return;
   qrContainer.style.display = 'block';
@@ -185,7 +185,7 @@ generateQr.onclick = () => {
     text: 'https://lozanoroa.github.io/boda-jonatan-michel/',
     width: 200,
     height: 200,
-    colorDark: '#000000',  // NEGRO
+    colorDark: '#000000',
     colorLight: '#ffffff'
   });
   generateQr.style.display = 'none';
