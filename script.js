@@ -106,7 +106,7 @@ function openPreview(url, type) {
     : `<video controls style="max-width:100%;max-height:70vh;border-radius:15px;"><source src="${url}"></video>`;
 }
 
-// === SUBIR ===
+// === SUBIR (AHORA GUARDA TODO) ===
 submitUpload.onclick = async () => {
   const files = mediaFile.files;
   const msg = messageInput.value.trim().slice(0, 50);
@@ -117,6 +117,7 @@ submitUpload.onclick = async () => {
 
   const uploadedItems = [];
 
+  // 1. SUBIR A CLOUDINARY
   for (const file of files) {
     const formData = new FormData();
     formData.append('file', file);
@@ -147,14 +148,31 @@ submitUpload.onclick = async () => {
 
   if (uploadedItems.length > 0) {
     try {
+      // 2. OBTENER JSON ACTUAL
+      const currentRes = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
+      let currentData = [];
+      if (currentRes.ok) {
+        const text = await currentRes.text();
+        try {
+          currentData = JSON.parse(text);
+          if (!Array.isArray(currentData)) currentData = [];
+        } catch {
+          currentData = [];
+        }
+      }
+
+      // 3. COMBINAR CON NUEVOS
+      const updatedData = [...currentData, ...uploadedItems];
+
+      // 4. ENVIAR TODO A PIPEDREAM
       const syncResponse = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(uploadedItems, null, 2)
+        body: JSON.stringify(updatedData, null, 2)
       });
 
       if (syncResponse.ok) {
-        alert(`${uploadedItems.length} recuerdo(s) subido(s) y sincronizado(s)!`);
+        alert(`${uploadedItems.length} recuerdo(s) subido(s) y guardado(s)!`);
         setTimeout(() => {
           loadGallery();
           uploadModal.style.display = 'none';
@@ -168,6 +186,7 @@ submitUpload.onclick = async () => {
     }
   }
 
+  // LIMPIAR
   mediaFile.value = '';
   messageInput.value = '';
   submitUpload.disabled = false;
