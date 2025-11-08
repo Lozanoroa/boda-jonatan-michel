@@ -61,7 +61,7 @@ body {
   height: 280px;
   border-radius: 50%;
   overflow: hidden;
-  border: 8px solid #000000;
+  border: 8px solid #8768;
   cursor: pointer;
   transition: transform 0.3s;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -360,3 +360,4 @@ body {
     font-size: 0.95rem;
   }
 }
+
