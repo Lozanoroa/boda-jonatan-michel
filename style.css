@@ -5,11 +5,13 @@
   box-sizing: border-box;
 }
 body {
-  font-family: 'Old Standard TT', serif;
+  font-family: 'Old Standard TT', Georgia, serif;
   background: #fdf6f0;
   color: #000000;
   line-height: 1.6;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .page-container {
   max-width: 800px;
@@ -50,7 +52,7 @@ body {
   font-size: 2.5rem;
   color: #000000;
   margin: 20px 0;
-  font-family: 'Themysion', cursive;
+  font-family: 'Themysion', 'Brush Script MT', cursive;
 }
 /* FOTO */
 .photo-wrapper {
