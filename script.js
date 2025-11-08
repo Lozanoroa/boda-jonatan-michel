@@ -2,7 +2,9 @@
 const CLOUDINARY_NAME = 'dnhrk78ul';
 const CLOUDINARY_PRESET = 'boda2025';
 const JSON_URL = 'https://raw.githubusercontent.com/lozanoroa/boda-jonatan-michel/main/data/recuerdos.json';
-const WEBHOOK_URL = 'https://eo7qq78xmdl6iww.m.pipedream.net';
+
+// === NUEVA URL DE PIPEDREAM CON TOKEN (CREA ESTA EN PASO 1) ===
+const PIPEDREAM_WEBHOOK = 'https://eo7qq78xmdl6iww.m.pipedream.net'; // ← CAMBIA ESTO
 
 // === ELEMENTOS ===
 const uploadBtn = document.getElementById('uploadBtn');
@@ -35,13 +37,13 @@ async function loadGallery() {
   galleryGrid.innerHTML = '<p style="padding:20px;">Cargando...</p>';
   try {
     const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
-    if (!res.ok) throw new Error('No se pudo cargar el JSON');
+    if (!res.ok) throw new Error('No se pudo cargar');
     const data = await res.json();
     currentItems = Array.isArray(data) ? data : [];
     renderGallery();
   } catch (error) {
     console.error(error);
-    galleryGrid.innerHTML = '<p style="color:red;">Error de conexión. Intenta de nuevo.</p>';
+    galleryGrid.innerHTML = '<p style="color:red;">Error de conexión.</p>';
   }
 }
 
@@ -85,15 +87,20 @@ function downloadItem(url) {
 async function deleteItem(index) {
   if (!confirm('¿Eliminar este recuerdo?')) return;
   currentItems.splice(index, 1);
+  await saveToGitHub(currentItems);
+  renderGallery();
+}
+
+// === GUARDAR EN GITHUB (NUEVO) ===
+async function saveToGitHub(data) {
   try {
-    await fetch(WEBHOOK_URL, {
+    await fetch(PIPEDREAM_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(currentItems)
+      body: JSON.stringify(data, null, 2)
     });
-    renderGallery();
-  } catch {
-    alert('Error al eliminar.');
+  } catch (error) {
+    console.error('Error al guardar:', error);
   }
 }
 
@@ -128,7 +135,6 @@ submitUpload.onclick = async () => {
         method: 'POST',
         body: formData
       });
-
       const data = await response.json();
 
       if (data.secure_url) {
@@ -138,55 +144,35 @@ submitUpload.onclick = async () => {
           message: msg,
           timestamp: new Date().toISOString()
         });
-      } else {
-        alert(`Error al subir ${file.name}: ${data.error?.message || 'Desconocido'}`);
       }
     } catch (error) {
-      alert(`Error de red: ${file.name}`);
+      alert(`Error: ${file.name}`);
     }
   }
 
   if (uploadedItems.length > 0) {
+    // 2. OBTENER JSON ACTUAL
+    let currentData = [];
     try {
-      // 2. OBTENER JSON ACTUAL
-      const currentRes = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
-      let currentData = [];
-      if (currentRes.ok) {
-        const text = await currentRes.text();
-        try {
-          currentData = JSON.parse(text);
-          if (!Array.isArray(currentData)) currentData = [];
-        } catch {
-          currentData = [];
-        }
+      const res = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-cache' });
+      if (res.ok) {
+        const text = await res.text();
+        currentData = JSON.parse(text);
+        if (!Array.isArray(currentData)) currentData = [];
       }
+    } catch {}
 
-      // 3. COMBINAR CON NUEVOS
-      const updatedData = [...currentData, ...uploadedItems];
+    // 3. COMBINAR Y GUARDAR
+    const finalData = [...currentData, ...uploadedItems];
+    await saveToGitHub(finalData);
 
-      // 4. ENVIAR TODO A PIPEDREAM
-      const syncResponse = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData, null, 2)
-      });
-
-      if (syncResponse.ok) {
-        alert(`${uploadedItems.length} recuerdo(s) subido(s) y guardado(s)!`);
-        setTimeout(() => {
-          loadGallery();
-          uploadModal.style.display = 'none';
-        }, 3000);
-      } else {
-        throw new Error(`HTTP ${syncResponse.status}`);
-      }
-    } catch (error) {
-      console.error('Error sincronizando:', error);
-      alert('Subido a Cloudinary, pero no sincronizado con GitHub. Intenta de nuevo.');
-    }
+    alert(`${uploadedItems.length} recuerdo(s) subido(s)!`);
+    setTimeout(() => {
+      loadGallery();
+      uploadModal.style.display = 'none';
+    }, 2000);
   }
 
-  // LIMPIAR
   mediaFile.value = '';
   messageInput.value = '';
   submitUpload.disabled = false;
@@ -218,7 +204,7 @@ function openGallery() {
   loadGallery();
 }
 
-// Cerrar
+// Cerrar modales
 document.querySelectorAll('.close, .close-preview, .close-upload').forEach(btn => {
   btn.onclick = () => {
     galleryModal.style.display = 'none';
