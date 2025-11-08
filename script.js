@@ -51,7 +51,6 @@ function renderGallery() {
     galleryGrid.innerHTML = '<p style="font-style:italic;">Sin recuerdos aún</p>';
     return;
   }
-
   currentItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   currentItems.forEach((d, index) => {
     const item = document.createElement('div');
@@ -60,11 +59,9 @@ function renderGallery() {
       if (e.target.tagName === 'BUTTON') return;
       openPreview(d.url, d.type);
     };
-
     const mediaHTML = d.type === 'image'
       ? `<img src="${d.url}" loading="lazy">`
       : `<video controls><source src="${d.url}#t=0.1"></video>`;
-
     item.innerHTML = `
       ${mediaHTML}
       <div class="actions">
@@ -109,7 +106,7 @@ function openPreview(url, type) {
     : `<video controls style="max-width:100%;max-height:70vh;border-radius:15px;"><source src="${url}"></video>`;
 }
 
-// === SUBIR (CORREGIDO) ===
+// === SUBIR ===
 submitUpload.onclick = async () => {
   const files = mediaFile.files;
   const msg = messageInput.value.trim().slice(0, 50);
@@ -141,12 +138,10 @@ submitUpload.onclick = async () => {
           timestamp: new Date().toISOString()
         });
       } else {
-        console.error('Error Cloudinary:', data);
-        alert(`Error al subir ${file.name}`);
+        alert(`Error al subir ${file.name}: ${data.error?.message || 'Desconocido'}`);
       }
     } catch (error) {
-      console.error('Error de red:', error);
-      alert(`Error de conexión al subir ${file.name}`);
+      alert(`Error de red: ${file.name}`);
     }
   }
 
@@ -155,22 +150,24 @@ submitUpload.onclick = async () => {
       const syncResponse = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(uploadedItems)
+        body: JSON.stringify(uploadedItems, null, 2)
       });
 
       if (syncResponse.ok) {
-        alert(`${uploadedItems.length} recuerdo(s) subido(s) con éxito!`);
-        setTimeout(loadGallery, 3000);
-        uploadModal.style.display = 'none';
+        alert(`${uploadedItems.length} recuerdo(s) subido(s) y sincronizado(s)!`);
+        setTimeout(() => {
+          loadGallery();
+          uploadModal.style.display = 'none';
+        }, 3000);
       } else {
-        throw new Error('Sync failed');
+        throw new Error(`HTTP ${syncResponse.status}`);
       }
-    } catch {
+    } catch (error) {
+      console.error('Error sincronizando:', error);
       alert('Subido a Cloudinary, pero no sincronizado con GitHub. Intenta de nuevo.');
     }
   }
 
-  // Reset
   mediaFile.value = '';
   messageInput.value = '';
   submitUpload.disabled = false;
@@ -202,7 +199,7 @@ function openGallery() {
   loadGallery();
 }
 
-// Cerrar modales
+// Cerrar
 document.querySelectorAll('.close, .close-preview, .close-upload').forEach(btn => {
   btn.onclick = () => {
     galleryModal.style.display = 'none';
@@ -250,4 +247,3 @@ downloadQr.onclick = () => {
     a.click();
   }
 };
-
