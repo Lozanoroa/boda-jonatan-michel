@@ -1,3 +1,4 @@
+/* RESET */
 * {
   margin: 0;
   padding: 0;
@@ -6,9 +7,10 @@
 
 body {
   font-family: 'Old Standard TT', serif;
-  background: #fffaf0;
-  color: #000000; /* TEXTO EN NEGRO */
+  background: #fdf6f0;
+  color: #000000;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 .page-container {
@@ -18,15 +20,20 @@ body {
   text-align: center;
 }
 
+/* TÍTULO DENTRO DE FLORES */
 .title-container {
   position: relative;
   margin: 30px 0;
+  display: inline-block;
+  width: 100%;
 }
 
 .floral-frame {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 .title-inside {
@@ -34,27 +41,32 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.2rem;
-  color: #000000; /* NEGRO */
+  font-size: 2.1rem;
+  color: #000000;
   font-weight: 700;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-  width: 80%;
+  text-align: center;
+  width: 85%;
+  line-height: 1.3;
+  z-index: 10;
+  text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
 }
 
+/* NOMBRES */
 .names {
   font-size: 2.5rem;
-  color: #000000; /* NEGRO */
+  color: #000000;
   margin: 20px 0;
   font-family: 'Themysion', cursive;
 }
 
+/* FOTO */
 .photo-wrapper {
   margin: 30px auto;
   width: 280px;
   height: 280px;
   border-radius: 50%;
   overflow: hidden;
-  border: 8px solid #000000; /* NEGRO */
+  border: 8px solid #000000;
   cursor: pointer;
   transition: transform 0.3s;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -70,16 +82,18 @@ body {
   object-fit: cover;
 }
 
+/* MENSAJE */
 .message {
   font-size: 1.1rem;
   margin: 30px auto;
   max-width: 700px;
   font-style: italic;
-  color: #000000; /* NEGRO */
+  color: #000000;
 }
 
+/* BOTÓN SUBIR */
 .upload-btn {
-  background: #000000; /* NEGRO */
+  background: #000000;
   color: white;
   border: none;
   padding: 14px 32px;
@@ -130,7 +144,7 @@ body {
   top: 15px;
   right: 20px;
   font-size: 28px;
-  color: #000000; /* NEGRO */
+  color: #000000;
   cursor: pointer;
 }
 
@@ -139,7 +153,7 @@ body {
 }
 
 .select-btn, .submit-btn, .download-btn {
-  background: #000000; /* NEGRO */
+  background: #000000;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -162,9 +176,10 @@ body {
   border-radius: 12px;
   font-family: inherit;
   resize: none;
-  color: #000000; /* NEGRO */
+  color: #000000;
 }
 
+/* QR */
 .qr-section {
   text-align: center;
   margin: 30px 0;
@@ -180,39 +195,49 @@ body {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* GALERÍA */
+/* GALERÍA EN CUADRÍCULA */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 15px;
+  gap: 16px;
   margin-top: 20px;
-  padding: 10px;
+  padding: 10px 5px;
+  justify-items: center;
 }
 
 .gallery-item {
   background: white;
-  border-radius: 15px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.12);
   cursor: pointer;
-  transition: transform 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 160px;
 }
 
 .gallery-item:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.18);
 }
 
-.gallery-item img, .gallery-item video {
+.gallery-item img,
+.gallery-item video {
   width: 100%;
   height: 140px;
   object-fit: cover;
+  display: block;
 }
 
 .gallery-item p {
-  padding: 8px;
-  font-size: 0.8rem;
-  color: #000000; /* NEGRO */
+  padding: 10px 8px;
+  font-size: 0.82rem;
+  color: #000000;
   font-style: italic;
+  text-align: center;
+  margin: 0;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
 /* PREVIEW */
@@ -232,8 +257,17 @@ body {
   margin-bottom: 15px;
 }
 
+/* RESPONSIVE */
 @media (max-width: 600px) {
-  .title-inside { font-size: 1.8rem; }
+  .title-inside { 
+    font-size: 1.7rem; 
+    width: 90%;
+  }
   .names { font-size: 2rem; }
   .photo-wrapper { width: 220px; height: 220px; }
+  .gallery-grid { 
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+    gap: 12px;
+  }
+  .gallery-item img, .gallery-item video { height: 120px; }
 }
